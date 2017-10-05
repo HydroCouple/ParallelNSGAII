@@ -1,0 +1,21 @@
+In this file all the changes that have been done to the code (since it was posted on the web-site) are documented.
+
+Code posted on the web-site on 26th March 2005
+
+List of changes in chronological order:
+
+1.
+----------------------------------------------
+Version 1.0: Released on March 26, 2005
+----------------------------------------------
+
+
+2.
+----------------------------------------------
+Version 1.1: Released on May 9, 2005
+---------------------------------------------
+Crossover routine changed - More robust recombination
+
+An inconsistency with ISO-C++ removed - global data
+types now declared extern in the global.h header file.
+
