@@ -33,7 +33,7 @@ void allocate_memory_ind (individual *ind)
   if (nbin > 0)
   {
     ind->xbin = (double *)malloc(nbin * sizeof(double));
-    ind->gene = (int **)malloc(nbin * sizeof(int));
+    ind->gene = (int **)malloc(nbin * sizeof(int*));
 
     for (j = 0; j < nbin; j++)
     {

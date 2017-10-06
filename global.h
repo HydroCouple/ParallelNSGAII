@@ -3,6 +3,8 @@
 # ifndef _GLOBAL_H_
 # define _GLOBAL_H_
 
+//#define USE_OPENMP
+#define USE_MPI
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,6 +59,7 @@ extern int nrealmut;
 extern int nbincross;
 extern int nrealcross;
 extern int *nbits;
+extern int max_nbits;
 extern double *min_realvar;
 extern double *max_realvar;
 extern double *min_binvar;
@@ -65,6 +68,7 @@ extern int bitlength;
 extern int mpiProcessors;
 extern int numThreads;
 extern int procRank;
+extern int currentGen;
 
 void allocate_memory_pop (population *pop, int size);
 void allocate_memory_ind (individual *ind);
@@ -88,7 +92,8 @@ void decode_ind (individual *ind);
 int check_dominance (individual *a, individual *b);
 
 void evaluate_pop (population *pop);
-void evaluate_ind (individual *ind);
+void evaluate_ind (int index, individual *ind);
+
 
 void fill_nondominated_sort (population *mixed_pop, population *new_pop);
 void crowding_fill (population *mixed_pop, population *new_pop, int count, int front_size, list *cur);

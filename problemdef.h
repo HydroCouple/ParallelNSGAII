@@ -3,7 +3,12 @@
 
 #include <list>
 #include <string>
+#include <vector>
+#include "global.h"
 
+#ifdef USE_MPI
+#include <mpi.h>
+#endif
 
 typedef void (*problemDef)(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs);
 
@@ -11,6 +16,24 @@ extern problemDef problemDefinition;
 
 extern std::list<std::string> problemOptions;
 
+#ifdef USE_MPI
+
+void mpi_send_inds_to_worker(population *pop, int start, int length, int mpiProcessor);
+
+void mpi_serialize_ind_from_master(individual *ind, std::vector<double> &data);
+
+void mpi_recieve_inds_from_master(double *values, int size);
+
+void mpi_desrialize_ind_from_master(individual *ind, double *values, int &currentPos);
+
+void mpi_serialize_ind_from_worker(individual *ind, std::vector<double>& data);
+
+void mpi_recieve_inds_from_worker(population *pop, int mpiProcessor);
+
+void mpi_desrialize_ind_from_worker(individual *ind, double *values, int &currentPos);
+
+
+#endif
 
 //0
 void test_problem_sch1 (double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs);

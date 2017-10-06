@@ -8,13 +8,13 @@ CONFIG-=app_bundle
 CONFIG += c++11
 
 #DEFINES += USE_OPENMP
-#DEFINES += USE_MPI
+DEFINES += USE_MPI
 
  contains(DEFINES,USE_MPI){
 
-  QMAKE_CC = mpicc
-  QMAKE_CXX = mpic++
-  QMAKE_LINK = mpic++
+  QMAKE_CC = /usr/local/bin/mpicc
+  QMAKE_CXX = /usr/local/bin/mpic++
+  QMAKE_LINK = /usr/local/bin/mpic++
 
   QMAKE_CFLAGS += $$system(mpicc --showme:compile)
   QMAKE_CXXFLAGS += $$system(mpic++ --showme:compile)
@@ -49,14 +49,14 @@ SOURCES += \
     list.c \
     merge.c \
     mutation.c \
-    nsga2r.cpp \
     rand.c \
     rank.c \
     report.c \
     sort.c \
     tourselect.c \
     eval.cpp \
-    problemdef.cpp
+    problemdef.cpp \
+    parallelnsga2r.cpp
 
 CONFIG(debug, debug|release) {
    DESTDIR = ./build/debug
