@@ -3,34 +3,33 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <math.h>
-
-# include "global.h"
+# include "problemdef.h"
 # include "rand.h"
-
-/* # define sch1 */
-/* # define sch2 */
-/* # define fon */
-/* # define kur */
-/* # define pol */
-/* # define vnt */
-/* # define zdt1 */
-/* # define zdt2 */
-/* # define zdt3 */
-/* # define zdt4 */
-/* # define zdt5 */
+# include "global.h"
+# define sch1
+# define sch2
+# define fon
+# define kur
+# define pol
+# define vnt
+# define zdt1
+# define zdt2
+# define zdt3
+# define zdt4
+# define zdt5
 # define zdt6
-/* # define bnh */
-/* # define osy */
-/* # define srn */
-/* # define tnk */
-/* # define ctp1 */
-/* # define ctp2 */
-/* # define ctp3 */
-/* # define ctp4 */
-/* # define ctp5 */
-/* # define ctp6 */
-/* # define ctp7 */
-/* # define ctp8 */
+# define bnh
+# define osy
+# define srn
+# define tnk
+# define ctp1
+# define ctp2
+# define ctp3
+# define ctp4
+# define ctp5
+# define ctp6
+# define ctp7
+# define ctp8
 
 /*  Test problem SCH1
     # of real variables = 1
@@ -40,7 +39,7 @@
     */
 
 #ifdef sch1
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_sch1 (double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     obj[0] = pow(xreal[0],2.0);
     obj[1] = pow((xreal[0]-2.0),2.0);
@@ -56,7 +55,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef sch2
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_sch2(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     if (xreal[0]<=1.0)
     {
@@ -90,7 +89,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef fon
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_fon(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     double s1, s2;
     int i;
@@ -114,7 +113,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef kur
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_kur(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     int i;
     double res1, res2;
@@ -138,7 +137,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef pol
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_pol(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     double a1, a2, b1, b2;
     a1 = 0.5*sin(1.0) - 2.0*cos(1.0) + sin(2.0) - 1.5*cos(2.0);
@@ -159,7 +158,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef vnt
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_vnt(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     obj[0] = 0.5*(xreal[0]*xreal[0] + xreal[1]*xreal[1]) + sin(xreal[0]*xreal[0] + xreal[1]*xreal[1]);
     obj[1] = (pow((3.0*xreal[0] - 2.0*xreal[1] + 4.0),2.0))/8.0 + (pow((xreal[0]-xreal[1]+1.0),2.0))/27.0 + 15.0;
@@ -176,7 +175,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef zdt1
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_zdt1(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     double f1, f2, g, h;
     int i;
@@ -204,7 +203,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef zdt2
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_zdt2(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     double f1, f2, g, h;
     int i;
@@ -232,7 +231,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef zdt3
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_zdt3(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     double f1, f2, g, h;
     int i;
@@ -260,7 +259,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef zdt4
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_zdt4(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     double f1, f2, g, h;
     int i;
@@ -289,7 +288,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef zdt5
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_zdt5(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     int i, j;
     int u[11];
@@ -349,7 +348,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef zdt6
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_zdt6(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     double f1, f2, g, h;
     int i;
@@ -378,7 +377,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef bnh
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_bnh(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     obj[0] = 4.0*(xreal[0]*xreal[0] + xreal[1]*xreal[1]);
     obj[1] = pow((xreal[0]-5.0),2.0) + pow((xreal[1]-5.0),2.0);
@@ -396,7 +395,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef osy
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_osy(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     obj[0] = -(25.0*pow((xreal[0]-2.0),2.0) + pow((xreal[1]-2.0),2.0) + pow((xreal[2]-1.0),2.0) + pow((xreal[3]-4.0),2.0) + pow((xreal[4]-1.0),2.0));
     obj[1] = xreal[0]*xreal[0] +  xreal[1]*xreal[1] + xreal[2]*xreal[2] + xreal[3]*xreal[3] + xreal[4]*xreal[4] + xreal[5]*xreal[5];
@@ -418,7 +417,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef srn
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_srn(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     obj[0] = 2.0 + pow((xreal[0]-2.0),2.0) + pow((xreal[1]-1.0),2.0);
     obj[1] = 9.0*xreal[0] - pow((xreal[1]-1.0),2.0);
@@ -436,7 +435,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef tnk
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_tnk(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     obj[0] = xreal[0];
     obj[1] = xreal[1];
@@ -461,7 +460,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef ctp1
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_ctp1(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     double g;
     g = 1.0 + xreal[1];
@@ -481,7 +480,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef ctp2
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_ctp2(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     double g;
     double theta, a, b, c, d, e;
@@ -513,7 +512,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef ctp3
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_ctp3(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     double g;
     double theta, a, b, c, d, e;
@@ -545,7 +544,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef ctp4
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_ctp4(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     double g;
     double theta, a, b, c, d, e;
@@ -577,7 +576,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef ctp5
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_ctp5 (double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     double g;
     double theta, a, b, c, d, e;
@@ -609,7 +608,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef ctp6
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_ctp6 (double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     double g;
     double theta, a, b, c, d, e;
@@ -641,7 +640,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef ctp7
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_ctp7 (double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     double g;
     double theta, a, b, c, d, e;
@@ -673,7 +672,7 @@ void test_problem (double *xreal, double *xbin, int **gene, double *obj, double 
     */
 
 #ifdef ctp8
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr)
+void test_problem_ctp8 (double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
 {
     double g;
     double theta, a, b, c, d, e;

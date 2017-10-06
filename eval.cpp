@@ -3,16 +3,16 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <math.h>
-
 # include "global.h"
 # include "rand.h"
+# include "problemdef.h"
 
 /* Routine to evaluate objective function values and constraints for a population */
 void evaluate_pop (population *pop)
 {
     int i;
 
-    for (i=0; i < popsize; i++)
+    for (i = 0; i < popsize; i++)
     {
         evaluate_ind (&(pop->ind[i]));
     }
@@ -24,7 +24,9 @@ void evaluate_pop (population *pop)
 void evaluate_ind (individual *ind)
 {
     int j;
-    test_problem (ind->xreal, ind->xbin, ind->gene, ind->obj, ind->constr);
+
+    problemDefinition(ind->xreal, ind->xbin, ind->gene, ind->obj, ind->constr, problemOptions);
+
     if (ncon==0)
     {
         ind->constr_violation = 0.0;

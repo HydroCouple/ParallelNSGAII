@@ -33,80 +33,99 @@ int bitlength;
 int main (int argc, char **argv)
 {
     int i;
+
     FILE *fpt1;
     FILE *fpt2;
     FILE *fpt3;
     FILE *fpt4;
     FILE *fpt5;
+
     population *parent_pop;
     population *child_pop;
     population *mixed_pop;
+
     if (argc<2)
     {
         printf("\n Usage ./nsga2r random_seed \n");
         exit(1);
     }
+
     seed = (double)atof(argv[1]);
+
     if (seed<=0.0 || seed>=1.0)
     {
         printf("\n Entered seed value is wrong, seed value must be in (0,1) \n");
         exit(1);
     }
+    
     fpt1 = fopen("initial_pop.out","w");
     fpt2 = fopen("final_pop.out","w");
     fpt3 = fopen("best_pop.out","w");
     fpt4 = fopen("all_pop.out","w");
     fpt5 = fopen("params.out","w");
+
     fprintf(fpt1,"# This file contains the data of initial population\n");
     fprintf(fpt2,"# This file contains the data of final population\n");
     fprintf(fpt3,"# This file contains the data of final feasible population (if found)\n");
     fprintf(fpt4,"# This file contains the data of all generations\n");
     fprintf(fpt5,"# This file contains information about inputs as read by the program\n");
+
     printf("\n Enter the problem relevant and algorithm relevant parameters ... ");
     printf("\n Enter the population size (a multiple of 4) : ");
     scanf("%d",&popsize);
+    
     if (popsize<4 || (popsize%4)!= 0)
     {
         printf("\n population size read is : %d",popsize);
         printf("\n Wrong population size entered, hence exiting \n");
         exit (1);
     }
+
     printf("\n Enter the number of generations : ");
     scanf("%d",&ngen);
+
     if (ngen<1)
     {
         printf("\n number of generations read is : %d",ngen);
         printf("\n Wrong nuber of generations entered, hence exiting \n");
         exit (1);
     }
+
     printf("\n Enter the number of objectives : ");
     scanf("%d",&nobj);
+
     if (nobj<1)
     {
         printf("\n number of objectives entered is : %d",nobj);
         printf("\n Wrong number of objectives entered, hence exiting \n");
         exit (1);
     }
+
     printf("\n Enter the number of constraints : ");
     scanf("%d",&ncon);
+
     if (ncon<0)
     {
         printf("\n number of constraints entered is : %d",ncon);
         printf("\n Wrong number of constraints enetered, hence exiting \n");
         exit (1);
     }
+
     printf("\n Enter the number of real variables : ");
     scanf("%d",&nreal);
+
     if (nreal<0)
     {
         printf("\n number of real variables entered is : %d",nreal);
         printf("\n Wrong number of variables entered, hence exiting \n");
         exit (1);
     }
+
     if (nreal != 0)
     {
         min_realvar = (double *)malloc(nreal*sizeof(double));
         max_realvar = (double *)malloc(nreal*sizeof(double));
+
         for (i=0; i<nreal; i++)
         {
             printf ("\n Enter the lower limit of real variable %d : ",i+1);
@@ -119,6 +138,7 @@ int main (int argc, char **argv)
                 exit(1);
             }
         }
+
         printf ("\n Enter the probability of crossover of real variable (0.6-1.0) : ");
         scanf ("%lf",&pcross_real);
         if (pcross_real<0.0 || pcross_real>1.0)
@@ -127,14 +147,17 @@ int main (int argc, char **argv)
             printf("\n Entered value of probability of crossover of real variables is out of bounds, hence exiting \n");
             exit (1);
         }
+
         printf ("\n Enter the probablity of mutation of real variables (1/nreal) : ");
         scanf ("%lf",&pmut_real);
+
         if (pmut_real<0.0 || pmut_real>1.0)
         {
             printf("\n Probability of mutation entered is : %e",pmut_real);
             printf("\n Entered value of probability of mutation of real variables is out of bounds, hence exiting \n");
             exit (1);
         }
+
         printf ("\n Enter the value of distribution index for crossover (5-20): ");
         scanf ("%lf",&eta_c);
         if (eta_c<=0)
@@ -143,6 +166,7 @@ int main (int argc, char **argv)
             printf("\n Wrong value of distribution index for crossover entered, hence exiting \n");
             exit (1);
         }
+
         printf ("\n Enter the value of distribution index for mutation (5-50): ");
         scanf ("%lf",&eta_m);
         if (eta_m<=0)
@@ -152,6 +176,7 @@ int main (int argc, char **argv)
             exit (1);
         }
     }
+
     printf("\n Enter the number of binary variables : ");
     scanf("%d",&nbin);
     if (nbin<0)
@@ -275,6 +300,7 @@ int main (int argc, char **argv)
     fflush(fpt3);
     fflush(fpt4);
     fflush(fpt5);
+
     for (i=2; i<=ngen; i++)
     {
         selection (parent_pop, child_pop);
@@ -290,6 +316,7 @@ int main (int argc, char **argv)
         fflush(fpt4);
         printf("\n gen = %d",i);
     }
+
     printf("\n Generations finished, now reporting solutions");
     report_pop(parent_pop,fpt2);
     report_feasible(parent_pop,fpt3);
@@ -303,6 +330,7 @@ int main (int argc, char **argv)
         fprintf(fpt5,"\n Number of crossover of binary variable = %d",nbincross);
         fprintf(fpt5,"\n Number of mutation of binary variable = %d",nbinmut);
     }
+
     fflush(stdout);
     fflush(fpt1);
     fflush(fpt2);
@@ -314,6 +342,7 @@ int main (int argc, char **argv)
     fclose(fpt3);
     fclose(fpt4);
     fclose(fpt5);
+
     if (nreal!=0)
     {
         free (min_realvar);

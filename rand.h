@@ -3,6 +3,10 @@
 # ifndef _RAND_H_
 # define _RAND_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Variable declarations for the random number generator */
 extern double seed;
 extern double oldrand[55];
@@ -15,5 +19,9 @@ void advance_random (void);
 double randomperc(void);
 int rnd (int low, int high);
 double rndreal (double low, double high);
+
+#ifdef __cplusplus
+}
+#endif
 
 # endif

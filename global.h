@@ -3,6 +3,11 @@
 # ifndef _GLOBAL_H_
 # define _GLOBAL_H_
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 # define INF 1.0e14
 # define EPS 1.0e-14
 # define E  2.71828182845905
@@ -57,6 +62,9 @@ extern double *max_realvar;
 extern double *min_binvar;
 extern double *max_binvar;
 extern int bitlength;
+extern int mpiProcessors;
+extern int numThreads;
+extern int procRank;
 
 void allocate_memory_pop (population *pop, int size);
 void allocate_memory_ind (individual *ind);
@@ -68,7 +76,7 @@ double minimum (double a, double b);
 
 void crossover (individual *parent1, individual *parent2, individual *child1, individual *child2);
 void realcross (individual *parent1, individual *parent2, individual *child1, individual *child2);
-void bincross (individual *parent1, individual *parent2, individual *child1, individual *child2);
+void bincross  (individual *parent1, individual *parent2, individual *child1, individual *child2);
 
 void assign_crowding_distance_list (population *pop, list *lst, int front_size);
 void assign_crowding_distance_indices (population *pop, int c1, int c2);
@@ -99,7 +107,7 @@ void mutation_ind (individual *ind);
 void bin_mutate_ind (individual *ind);
 void real_mutate_ind (individual *ind);
 
-void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr);
+//void test_problem (double *xreal, double *xbin, int **gene, double *obj, double *constr);
 
 void assign_rank_and_crowding_distance (population *new_pop);
 
@@ -115,4 +123,8 @@ void q_sort_dist(population *pop, int *dist, int left, int right);
 void selection (population *old_pop, population *new_pop);
 individual* tournament (individual *ind1, individual *ind2);
 
+
+#ifdef __cplusplus
+}
+#endif
 # endif

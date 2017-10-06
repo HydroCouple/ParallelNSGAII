@@ -1,5 +1,8 @@
-This is the Readme file for NSGA-II code.
-
+Parallel NSGAII
+--------------------------------------------------------------------------
+This code has been modified from the original NSGA-II code 
+developed by Kalyanmoy Deb so that it can be executed in parallel
+on HPC systems.
 
 About the Algorithm
 --------------------------------------------------------------------------
@@ -26,10 +29,11 @@ executable.
 
 Name of the executable produced is: nsga2r
 
-To run the program type: ./nsga2r random_seed
-Here random_seed is a real number in (0,1) which is used as a seed for random
-number generator.
-You can also store all the input data in a text file and use a redirection
+To run the program for one of the test problems provided 
+   type: mpirun -n x ./nsga2r random_seed -f <inp_file.in>
+   type: mpirun -n x ./nsga2r random_seed -t <inp_file.in>
+
+where x is the number of MPI processes to use and random_seed is a real number in (0,1) which is used as a seed for random number generator. You can also store all the input data in a text file and use a redirection
 operator to give the inputs to the program in a convenient way.
 You may use the following syntax: ./nsga2r random_seed <inp_file.in, where
 "inp_file.in" is the file that stores all the input parameters
@@ -56,7 +60,7 @@ nreal: Number of real variables
 min_realvar[i]: minimum value of i^{th} real variable
 max_realvar[i]: maximum value of i^{th} real variable
 pcross_real: probability of crossover of real variable
-pmut_real: probability of mutation of real variable
+pmut_real: probability of mutation of real variable It is recommended each decision variable is mutated with a probability of 1 / L, where L is the number of decision variables. This results in one mutation per offspring on average.
 eta_c: distribution index for real variable SBX crossover
 eta_m: distribution index for real variable polynomial mutation
 nbin: number of binary variables
