@@ -33,7 +33,7 @@ Name of the executable produced is: parallelnsga2r
 
 To run the program type the following:
     
-    mpirun -n x ./parallelnsga2r random_seed -f <inp_file.in>
+    mpirun -n x ./parallelnsga2r random_seed <inp_file.in>
 
 
 where x is the number of MPI processes to use and random_seed is a real number in (0,1) which is used as a seed for random number generator. 
