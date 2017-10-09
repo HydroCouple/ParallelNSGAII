@@ -3,7 +3,8 @@ Parallel NSGAII
 This code has been modified from the original NSGA-II code 
 developed by Kalyanmoy Deb so that it can be executed in parallel
 on HPC systems. It uses OpenMP for fine scale parallelism and MPI for coarse scale parallelism.
-Additionally, a user can specify an external shared library to be used in calculating the values of the objective functions and constraints
+Additionally, a user can specify an external shared library to be used for objective functions and constraints 
+calculations.
 
 
 About the Algorithm
@@ -20,7 +21,7 @@ Volume: 6
 Number: 2
 Pages: 182-197
 
-The original source code was developed by [Dr. Kalyanmoy Deb](http://www.iitk.ac.in/kangal
+The original source code was developed by [Dr. Kalyanmoy Deb](http://www.iitk.ac.in/kangal)
 
 How to compile and run the program
 ---------------------------------------------------------------------------
@@ -48,9 +49,7 @@ About the input parameters
 6. min_realvar[i]: minimum value of i^{th} real variable
 7. max_realvar[i]: maximum value of i^{th} real variable
 9. pcross_real: probability of crossover of real variable
-10. pmut_real: probability of mutation of real variable It is recommended each decision
-11. variable is mutated with a probability of 1 / L, where L is the number of decision
-12. variables. This results in one mutation per offspring on average.
+10. pmut_real: probability of mutation of real variable It is recommended each decision variable is mutated with a probability of 1 / L, where L is the number of decision variables. This results in one mutation per offspring on average.
 13. eta_c: distribution index for real variable SBX crossover
 14. eta_m: distribution index for real variable polynomial mutation
 15. nbin: number of binary variables
@@ -59,7 +58,31 @@ About the input parameters
 19. max_binvar[i]: maximum value of i^{th} binary variable
 20. pcross_bin: probability of crossover for binary variable
 21. pmut_bin: probability of mutation for binary variable
-22. problem definition: *-t x* for one of the test problems or -f <shared_library.in> funcname for a custom problem. Wheere x in is the index for the test problem and  <shared_library.in> is the path to the shared library, and funcname is the name of the function for the problem definition.
+22. problem definition: -t x for one of the test problems or -f <shared_library.in> funcname for a custom problem. Where x in is the index for the test problem and  <shared_library.in> is the path to the shared library, and funcname is the name of the function for the problem definition. The following are the indexes for the test problems
+    * 0 = SCH1
+    * 1 = SCH2
+    * 2 = FON
+    * 3 = KUR
+    * 4 = POL
+    * 5 = VNT
+    * 6 = ZDT1
+    * 7 = ZDT2
+    * 8 = ZDT3
+    * 9 = ZDT4
+    * 10 = ZDT5
+    * 11 = ZDT6
+    * 12 = BNH
+    * 13 = OSY
+    * 14 = SRN
+    * 15 = TNK
+    * 16 = CTP1
+    * 17 = CTP2
+    * 18 = CTP3
+    * 19 = CTP4
+    * 20 = CTP5
+    * 21 = CTP6
+    * 22 = CTP7
+    * 23 = CTP8
 23. remaining lines: will be read as an array of strings to passed as an argument to the problem definition
 
 About the output files

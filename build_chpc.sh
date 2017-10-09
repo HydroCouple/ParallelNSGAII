@@ -65,6 +65,6 @@ else
 
     echo "running on hpc..."
     
-    srun ./parallelnsga2r 0.1 ./input_data/zdt5.in
+    srun ./parallelnsga2r 0.1 ./input_data/zdt6.in
 
 endif

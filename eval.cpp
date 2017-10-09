@@ -7,6 +7,9 @@
 # include "rand.h"
 # include "problemdef.h"
 
+#ifdef USE_OPENMP
+ # include <omp.h>
+#endif
 
 /* Routine to evaluate objective function values and constraints for a population */
 void evaluate_pop (population *pop)

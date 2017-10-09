@@ -805,7 +805,7 @@ int main (int argc, char **argv)
       fprintf(fpt4,"# gen = %d\n",i);
       report_pop(parent_pop,fpt4);
       fflush(fpt4);
-      printf("\n gen = %d",i);
+      printf("\n gen = %d\n",i);
     }
 
     printf("\n Generations finished, now reporting solutions\n");
