@@ -1,0 +1,45 @@
+# Makefile for compiling Parellized version of the NSGA-II source code
+USE_MPI = ""
+USE_OPENMP = ""
+
+ifdef USE_MPI
+ CC=mpicxx
+ LD=mpicxx
+ $(info  MPI is enabled)
+else
+ CC=g++
+ LD=g++
+ $(info  MPI is disabled)
+endif
+
+# INCDIRS = -I/uufs/chpc.utah.edu/sys/installdir/intel/compilers_and_libraries_2017.0.098/linux/mpi/include64
+
+
+CUSTOMDEFINES =""
+
+ifdef USE_OPENMP
+  CUSTOMDEFINES = -fopenmp
+ $(info  OpenMP is enabled)
+else
+ $(info  OpenMP is disabled)
+endif
+
+RM=rm -f
+
+
+CXXFLAGS =-Wall -Werror -pedantic -g $(CUSTOMDEFINES) -std=c++11 $(INCDIRS)
+LDFLAGS = $(CUSTOMDEFINES)
+
+OBJS:=$(patsubst %.c,%.o,$(wildcard *.c)) $(patsubst %.cpp,%.o,$(wildcard *.cpp))
+
+MAIN=parallelnsga2r
+
+all:$(MAIN)
+$(MAIN):$(OBJS)
+	$(LD) $(LDFLAGS) $(OBJS) -o $(MAIN) -lm
+
+%.o: %.c %.cpp global.h rand.h
+	$(CC) $(CFLAGS) -c $<
+
+clean:
+	$(RM) $(OBJS)

@@ -23,7 +23,6 @@ moc_*.cpp
 moc_*.h
 qrc_*.cpp
 ui_*.h
-Makefile*
 *build-*
 
 # QtCreator
@@ -37,3 +36,7 @@ Makefile*
 # QtCtreator CMake
 CMakeLists.txt.user*
 
+
+#custom
+parallelnsga2r
+nsga2r.old
