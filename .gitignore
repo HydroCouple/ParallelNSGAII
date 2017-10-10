@@ -40,3 +40,4 @@ CMakeLists.txt.user*
 #custom
 parallelnsga2r
 nsga2r.old
+build_chpc.sh

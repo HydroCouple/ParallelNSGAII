@@ -1,13 +1,12 @@
 #!/bin/csh
 
-#SBATCH --account=u0660135
+#SBATCH --account=usu-em
 #SBATCH --partition=usu-em
-#SBATCH --job-name=hydrocouple_job
+#SBATCH --job-name=parallel_nsga2_1_1
 #SBATCH --time=1-00:00:00
-#SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --sockets-per-node=4
-#SBATCH --cores-per-socket=8
+#SBATCH --ntasks-per-node=1
+#SBATCH --cpus-per-task=1
 
 set cur_dir = $PWD
 echo "Current working directory: "$cur_dir
@@ -30,8 +29,8 @@ if ($#argv >= 3) then
 endif
 
 #load latest gcc
-echo "loading gcc/4.9.2 mvapich2"
-module load gcc/4.9.2 mvapich2
+echo "loading intel/2017.4.196 mvapich2"
+module load intel/2017.4.196 mvapich2
 echo ""
 echo "#==================================================================================================="
 
@@ -41,13 +40,15 @@ setenv LD_LIBRARY_PATH "/uufs/chpc.utah.edu/sys/installdir/intel/compilers_and_l
 echo ""
 echo "#==================================================================================================="
 
-make -f Makefile.orig clean
-make -j 8 -f Makefile.orig
 
+if ($perform_make =~ "Yes") then
+    make -f Makefile.orig clean
+    make -j 8 -f Makefile.orig
+endif
 
 if ($run_hpc =~ "No") then
     echo "no hpc..."
-    mpirun -n 8 ./parallelnsga2r 0.1 ./input_data/zdt5.in
+    mpirun -n 4 ./parallelnsga2r 0.1 ./input_data/zdt5.in
 else
 
     set omp_threads = 1
@@ -65,6 +66,6 @@ else
 
     echo "running on hpc..."
     
-    srun ./parallelnsga2r 0.1 ./input_data/zdt6.in
+    srun ./parallelnsga2r 0.1 ./input_data/zdt5.in
 
 endif

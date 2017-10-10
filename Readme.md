@@ -2,7 +2,7 @@ Parallel NSGAII
 ========================================================================
 This code has been modified from the original NSGA-II code 
 developed by Kalyanmoy Deb so that it can be executed in parallel
-on HPC systems. It uses OpenMP for fine scale parallelism and MPI for coarse scale parallelism.
+on HPC systems for costly problem evaluations. It uses OpenMP for fine scale parallelism and MPI for coarse scale parallelism.
 Additionally, a user can specify an external shared library to be used for objective functions and constraints 
 calculations.
 
@@ -34,10 +34,10 @@ Name of the executable produced is: parallelnsga2r
 
 To run the program type the following:
     
-    mpirun -n x ./parallelnsga2r random_seed <inp_file.in>
+    mpirun -n x ./parallelnsga2r random_seed <inp_file.in> -p
 
 
-where x is the number of MPI processes to use and random_seed is a real number in (0,1) which is used as a seed for random number generator. 
+where x is the number of MPI processes to use and random_seed is a real number in (0,1) which is used as a seed for random number generator. <inp_file.in> is the problem input file. -p is an optional argument that indicates whether you want to write each individual in the population for each generation to file. Writing for each generation can be costly in terms of simulation times.
 
 About the input parameters
 ---------------------------------------------------------------------------

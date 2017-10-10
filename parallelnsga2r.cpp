@@ -48,7 +48,7 @@ int bitlength;
 int mpiProcessors = 1;
 int numThreads = 1;
 int procRank = 0;
-std::list<std::string> problemOptions;
+std::vector<std::string> problemOptions;
 problemDef problemDefinition = nullptr;
 int problemIndex = 0;
 std::string sharedLibraryPath;
@@ -116,6 +116,7 @@ bool fileExists(const std::string& name)
   struct stat buffer;
   return (stat (name.c_str(), &buffer) == 0);
 }
+
 
 void abortNSGA(int rc = 0)
 {
@@ -271,7 +272,7 @@ void setProblemDefinitionFromLibrary(const std::string& libraryPath, const std::
     if(handle)
     {
       problemDefinition = nullptr;
-      problemDefinition = (problemDef)dlsym(handle, functionName.c_str());
+      *reinterpret_cast<void**>(&problemDefinition) = dlsym(handle, functionName.c_str());
 
       if(problemDefinition == nullptr)
       {
@@ -305,6 +306,8 @@ void closeLibrary(void* handle)
 int main (int argc, char **argv)
 {
 
+  bool printAllIndividuals = false;
+
   if (argc < 2)
   {
     printf("\n Usage ./nsga2r random_seed <inputfile>\n");
@@ -313,7 +316,9 @@ int main (int argc, char **argv)
 
 #ifdef USE_MPI
   {
-    int rc = MPI_Init(&argc,&argv);
+    int allowed = 0;
+    int rc = MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &allowed);
+    //int rc = MPI_Init(&argc,&argv);
 
     if (rc != MPI_SUCCESS)
     {
@@ -344,6 +349,12 @@ int main (int argc, char **argv)
   {
     printf("\n Entered seed value is wrong, seed value must be in (0,1) \n");
     abortNSGA();
+  }
+
+  if(argc > 3)
+  {
+    if(std::string(argv[3]) == "-p")
+      printAllIndividuals = true;
   }
 
   std::string inputfile(argv[2]);
@@ -643,12 +654,13 @@ int main (int argc, char **argv)
         }
         else if(split[0] == "-f" && split.size() > 2)
         {
-          sharedLibraryPath = split[1];
+          std::string tempSharedLibraryPath = split[1];
 
-          if(fileExists(sharedLibraryPath))
+          if(fileExists(tempSharedLibraryPath))
           {
             std::string functionName = split[2];
-            setProblemDefinitionFromLibrary(sharedLibraryPath,functionName,fhandle);
+            setProblemDefinitionFromLibrary(tempSharedLibraryPath,functionName,fhandle);
+            sharedLibraryPath = tempSharedLibraryPath;
             problemIndex = -1;
           }
           else
@@ -664,6 +676,7 @@ int main (int argc, char **argv)
 
     while (std::getline(inputFStream,line))
     {
+//      printf("%s\n", line.c_str());
       problemOptions.push_back(line);
     }
 
@@ -692,8 +705,13 @@ int main (int argc, char **argv)
     tempFile = inputfile; replace(tempFile,ext,"_best_pop.out");
     FILE *fpt3 = fopen(tempFile.c_str(),"w");
 
-    tempFile = inputfile; replace(tempFile,ext,"_all_pop.out");
-    FILE *fpt4 = fopen(tempFile.c_str(),"w");
+    FILE *fpt4 = nullptr;
+
+    if(printAllIndividuals)
+    {
+      tempFile = inputfile; replace(tempFile,ext,"_all_pop.out");
+      fpt4 = fopen(tempFile.c_str(),"w");
+    }
 
     tempFile = inputfile; replace(tempFile,ext,"_params.out");
     FILE *fpt5 = fopen(tempFile.c_str(),"w");
@@ -701,7 +719,10 @@ int main (int argc, char **argv)
     fprintf(fpt1,"# This file contains the data of initial population\n");
     fprintf(fpt2,"# This file contains the data of final population\n");
     fprintf(fpt3,"# This file contains the data of final feasible population (if found)\n");
-    fprintf(fpt4,"# This file contains the data of all generations\n");
+
+    if(printAllIndividuals)
+      fprintf(fpt4,"# This file contains the data of all generations\n");
+
     fprintf(fpt5,"# This file contains information about inputs as read by the program\n");
 
 
@@ -749,7 +770,9 @@ int main (int argc, char **argv)
     fprintf(fpt1,"# of objectives = %d, # of constraints = %d, # of real_var = %d, # of bits of bin_var = %d, constr_violation, rank, crowding_distance\n",nobj,ncon,nreal,bitlength);
     fprintf(fpt2,"# of objectives = %d, # of constraints = %d, # of real_var = %d, # of bits of bin_var = %d, constr_violation, rank, crowding_distance\n",nobj,ncon,nreal,bitlength);
     fprintf(fpt3,"# of objectives = %d, # of constraints = %d, # of real_var = %d, # of bits of bin_var = %d, constr_violation, rank, crowding_distance\n",nobj,ncon,nreal,bitlength);
-    fprintf(fpt4,"# of objectives = %d, # of constraints = %d, # of real_var = %d, # of bits of bin_var = %d, constr_violation, rank, crowding_distance\n",nobj,ncon,nreal,bitlength);
+
+    if(printAllIndividuals)
+      fprintf(fpt4,"# of objectives = %d, # of constraints = %d, # of real_var = %d, # of bits of bin_var = %d, constr_violation, rank, crowding_distance\n",nobj,ncon,nreal,bitlength);
 
     nbinmut = 0;
     nrealmut = 0;
@@ -778,11 +801,13 @@ int main (int argc, char **argv)
 
     report_pop (parent_pop, fpt1);
 
-    fprintf(fpt4,"# gen = 1\n");
+    if(printAllIndividuals)
+    {
+      fprintf(fpt4,"# gen = 1\n");
+      report_pop(parent_pop, fpt4);
+    }
 
-    report_pop(parent_pop, fpt4);
-
-    printf("\ngen = 1");
+    printf("\n gen = 1 \n");
 
     fflush(stdout);
     fflush(fpt1);
@@ -802,9 +827,14 @@ int main (int argc, char **argv)
       fill_nondominated_sort (mixed_pop, parent_pop);
       /* Comment following three lines if information for all
         generations is not desired, it will speed up the execution */
-      fprintf(fpt4,"# gen = %d\n",i);
-      report_pop(parent_pop,fpt4);
-      fflush(fpt4);
+
+      if(printAllIndividuals)
+      {
+        fprintf(fpt4,"# gen = %d\n",i);
+        report_pop(parent_pop,fpt4);
+        //        fflush(fpt4);
+      }
+
       printf("\n gen = %d\n",i);
     }
 
@@ -829,13 +859,15 @@ int main (int argc, char **argv)
     fflush(fpt1);
     fflush(fpt2);
     fflush(fpt3);
-    fflush(fpt4);
+    if(printAllIndividuals)
+      fflush(fpt4);
     fflush(fpt5);
 
     fclose(fpt1);
     fclose(fpt2);
     fclose(fpt3);
-    fclose(fpt4);
+    if(printAllIndividuals)
+      fclose(fpt4);
     fclose(fpt5);
 
 
@@ -881,7 +913,7 @@ int main (int argc, char **argv)
     int result = 0;
     int dataSize  = 0;
 
-    while((result = MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status)) == MPI_SUCCESS && status.MPI_TAG != DIE_TAG &&
+    while((result = MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status)) == MPI_SUCCESS && status.MPI_TAG != DIE_TAG &&
           (result = MPI_Get_count(&status,MPI_DOUBLE, &dataSize)) == MPI_SUCCESS && dataSize > 0)
     {
       double* data = new double[dataSize];
@@ -919,7 +951,7 @@ int main (int argc, char **argv)
     }
   }
 
-  if(procRank == 0)
+  if(procRank == 0 && mpiProcessors > 1)
   {
     printf("kill all children\n");
 
@@ -930,9 +962,11 @@ int main (int argc, char **argv)
     }
   }
 
-  printf("Processor finalized proc: % i\n", procRank);
+  printf("Finalizing Proc: % i\n", procRank);
 
   MPI_Finalize();
+
+  printf("Finalized Proc: % i\n", procRank);
 
   return 0;
 

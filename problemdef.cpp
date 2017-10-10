@@ -39,7 +39,7 @@
     */
 
 #ifdef sch1
-void test_problem_sch1 (double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_sch1 (int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     obj[0] = pow(xreal[0],2.0);
     obj[1] = pow((xreal[0]-2.0),2.0);
@@ -55,7 +55,7 @@ void test_problem_sch1 (double *xreal, double *xbin, int **gene, double *obj, do
     */
 
 #ifdef sch2
-void test_problem_sch2(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_sch2(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     if (xreal[0]<=1.0)
     {
@@ -89,7 +89,7 @@ void test_problem_sch2(double *xreal, double *xbin, int **gene, double *obj, dou
     */
 
 #ifdef fon
-void test_problem_fon(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_fon(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     double s1, s2;
     int i;
@@ -113,7 +113,7 @@ void test_problem_fon(double *xreal, double *xbin, int **gene, double *obj, doub
     */
 
 #ifdef kur
-void test_problem_kur(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_kur(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     int i;
     double res1, res2;
@@ -121,7 +121,7 @@ void test_problem_kur(double *xreal, double *xbin, int **gene, double *obj, doub
     res2 = -0.2*sqrt((xreal[1]*xreal[1]) + (xreal[2]*xreal[2]));
     obj[0] = -10.0*( exp(res1) + exp(res2));
     obj[1] = 0.0;
-    for (i=0; i<3; i++)
+    for (i = 0; i < 3; i++)
     {
         obj[1] += pow(fabs(xreal[i]),0.8) + 5.0*sin(pow(xreal[i],3.0));
     }
@@ -137,7 +137,7 @@ void test_problem_kur(double *xreal, double *xbin, int **gene, double *obj, doub
     */
 
 #ifdef pol
-void test_problem_pol(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_pol(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     double a1, a2, b1, b2;
     a1 = 0.5*sin(1.0) - 2.0*cos(1.0) + sin(2.0) - 1.5*cos(2.0);
@@ -158,7 +158,7 @@ void test_problem_pol(double *xreal, double *xbin, int **gene, double *obj, doub
     */
 
 #ifdef vnt
-void test_problem_vnt(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_vnt(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     obj[0] = 0.5*(xreal[0]*xreal[0] + xreal[1]*xreal[1]) + sin(xreal[0]*xreal[0] + xreal[1]*xreal[1]);
     obj[1] = (pow((3.0*xreal[0] - 2.0*xreal[1] + 4.0),2.0))/8.0 + (pow((xreal[0]-xreal[1]+1.0),2.0))/27.0 + 15.0;
@@ -175,22 +175,26 @@ void test_problem_vnt(double *xreal, double *xbin, int **gene, double *obj, doub
     */
 
 #ifdef zdt1
-void test_problem_zdt1(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_zdt1(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     double f1, f2, g, h;
     int i;
     f1 = xreal[0];
     g = 0.0;
-    for (i=1; i<30; i++)
+
+    for (i = 1; i < 30; i++)
     {
         g += xreal[i];
     }
-    g = 9.0*g/29.0;
+
+    g = 9.0 * g / 29.0;
     g += 1.0;
     h = 1.0 - sqrt(f1/g);
     f2 = g*h;
+
     obj[0] = f1;
     obj[1] = f2;
+
     return;
 }
 #endif
@@ -203,7 +207,7 @@ void test_problem_zdt1(double *xreal, double *xbin, int **gene, double *obj, dou
     */
 
 #ifdef zdt2
-void test_problem_zdt2(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_zdt2(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     double f1, f2, g, h;
     int i;
@@ -231,7 +235,7 @@ void test_problem_zdt2(double *xreal, double *xbin, int **gene, double *obj, dou
     */
 
 #ifdef zdt3
-void test_problem_zdt3(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_zdt3(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     double f1, f2, g, h;
     int i;
@@ -259,7 +263,7 @@ void test_problem_zdt3(double *xreal, double *xbin, int **gene, double *obj, dou
     */
 
 #ifdef zdt4
-void test_problem_zdt4(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_zdt4(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     double f1, f2, g, h;
     int i;
@@ -288,16 +292,18 @@ void test_problem_zdt4(double *xreal, double *xbin, int **gene, double *obj, dou
     */
 
 #ifdef zdt5
-void test_problem_zdt5(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_zdt5(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     int i, j;
     int u[11];
     int v[11];
     double f1, f2, g, h;
+
     for (i=0; i<11; i++)
     {
         u[i] = 0;
     }
+
     for (j=0; j<30; j++)
     {
         if (gene[0][j] == 1)
@@ -305,6 +311,7 @@ void test_problem_zdt5(double *xreal, double *xbin, int **gene, double *obj, dou
             u[0]++;
         }
     }
+
     for (i=1; i<11; i++)
     {
         for (j=0; j<4; j++)
@@ -315,7 +322,9 @@ void test_problem_zdt5(double *xreal, double *xbin, int **gene, double *obj, dou
             }
         }
     }
+
     f1 = 1.0 + u[0];
+
     for (i=1; i<11; i++)
     {
         if (u[i] < 5)
@@ -327,11 +336,14 @@ void test_problem_zdt5(double *xreal, double *xbin, int **gene, double *obj, dou
             v[i] = 1;
         }
     }
+
     g = 0;
+
     for (i=1; i<11; i++)
     {
         g += v[i];
     }
+
     h = 1.0/f1;
     f2 = g*h;
     obj[0] = f1;
@@ -348,7 +360,7 @@ void test_problem_zdt5(double *xreal, double *xbin, int **gene, double *obj, dou
     */
 
 #ifdef zdt6
-void test_problem_zdt6(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_zdt6(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     double f1, f2, g, h;
     int i;
@@ -377,7 +389,7 @@ void test_problem_zdt6(double *xreal, double *xbin, int **gene, double *obj, dou
     */
 
 #ifdef bnh
-void test_problem_bnh(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_bnh(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     obj[0] = 4.0*(xreal[0]*xreal[0] + xreal[1]*xreal[1]);
     obj[1] = pow((xreal[0]-5.0),2.0) + pow((xreal[1]-5.0),2.0);
@@ -395,7 +407,7 @@ void test_problem_bnh(double *xreal, double *xbin, int **gene, double *obj, doub
     */
 
 #ifdef osy
-void test_problem_osy(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_osy(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     obj[0] = -(25.0*pow((xreal[0]-2.0),2.0) + pow((xreal[1]-2.0),2.0) + pow((xreal[2]-1.0),2.0) + pow((xreal[3]-4.0),2.0) + pow((xreal[4]-1.0),2.0));
     obj[1] = xreal[0]*xreal[0] +  xreal[1]*xreal[1] + xreal[2]*xreal[2] + xreal[3]*xreal[3] + xreal[4]*xreal[4] + xreal[5]*xreal[5];
@@ -417,7 +429,7 @@ void test_problem_osy(double *xreal, double *xbin, int **gene, double *obj, doub
     */
 
 #ifdef srn
-void test_problem_srn(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_srn(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     obj[0] = 2.0 + pow((xreal[0]-2.0),2.0) + pow((xreal[1]-1.0),2.0);
     obj[1] = 9.0*xreal[0] - pow((xreal[1]-1.0),2.0);
@@ -435,7 +447,7 @@ void test_problem_srn(double *xreal, double *xbin, int **gene, double *obj, doub
     */
 
 #ifdef tnk
-void test_problem_tnk(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_tnk(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     obj[0] = xreal[0];
     obj[1] = xreal[1];
@@ -460,7 +472,7 @@ void test_problem_tnk(double *xreal, double *xbin, int **gene, double *obj, doub
     */
 
 #ifdef ctp1
-void test_problem_ctp1(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_ctp1(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     double g;
     g = 1.0 + xreal[1];
@@ -480,7 +492,7 @@ void test_problem_ctp1(double *xreal, double *xbin, int **gene, double *obj, dou
     */
 
 #ifdef ctp2
-void test_problem_ctp2(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_ctp2(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     double g;
     double theta, a, b, c, d, e;
@@ -512,7 +524,7 @@ void test_problem_ctp2(double *xreal, double *xbin, int **gene, double *obj, dou
     */
 
 #ifdef ctp3
-void test_problem_ctp3(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_ctp3(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     double g;
     double theta, a, b, c, d, e;
@@ -544,7 +556,7 @@ void test_problem_ctp3(double *xreal, double *xbin, int **gene, double *obj, dou
     */
 
 #ifdef ctp4
-void test_problem_ctp4(double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_ctp4(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     double g;
     double theta, a, b, c, d, e;
@@ -576,7 +588,7 @@ void test_problem_ctp4(double *xreal, double *xbin, int **gene, double *obj, dou
     */
 
 #ifdef ctp5
-void test_problem_ctp5 (double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_ctp5 (int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     double g;
     double theta, a, b, c, d, e;
@@ -608,7 +620,7 @@ void test_problem_ctp5 (double *xreal, double *xbin, int **gene, double *obj, do
     */
 
 #ifdef ctp6
-void test_problem_ctp6 (double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_ctp6 (int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     double g;
     double theta, a, b, c, d, e;
@@ -640,7 +652,7 @@ void test_problem_ctp6 (double *xreal, double *xbin, int **gene, double *obj, do
     */
 
 #ifdef ctp7
-void test_problem_ctp7 (double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_ctp7 (int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     double g;
     double theta, a, b, c, d, e;
@@ -672,7 +684,7 @@ void test_problem_ctp7 (double *xreal, double *xbin, int **gene, double *obj, do
     */
 
 #ifdef ctp8
-void test_problem_ctp8 (double *xreal, double *xbin, int **gene, double *obj, double *constr, const std::list<std::string>& optionalArgs)
+void test_problem_ctp8 (int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs)
 {
     double g;
     double theta, a, b, c, d, e;

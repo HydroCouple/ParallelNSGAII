@@ -10,9 +10,9 @@ MAKEFILE      = Makefile
 
 ####### Compiler, tools and options
 
-CC            = /usr/local/bin/mpicc
-CXX           = /usr/local/bin/mpic++
-DEFINES       = -DUSE_MPI -DQT_QML_DEBUG
+CC            = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
+CXX           = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++
+DEFINES       = -DQT_QML_DEBUG
 CFLAGS        = -pipe -g -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -mmacosx-version-min=10.12.6 -Wall -W -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -stdlib=libc++ -g -std=gnu++11 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -mmacosx-version-min=10.12.6 -Wall -W -fPIC $(DEFINES)
 INCPATH       = -I. -isystem /usr/local/include -I../../../../Qt5.7.0/5.7/clang_64/mkspecs/macx-clang
@@ -34,9 +34,9 @@ TAR           = tar -cf
 COMPRESS      = gzip -9f
 DISTNAME      = parallelngsa21.1
 DISTDIR = /Users/calebbuahin/Documents/Projects/HydroCouple/ParallelNSGAII/build/debug/.obj/parallelngsa21.1
-LINK          = /usr/local/bin/mpic++
+LINK          = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++
 LFLAGS        = -headerpad_max_install_names -stdlib=libc++ -Wl,-syslibroot,/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk -mmacosx-version-min=10.12.6
-LIBS          = $(SUBLIBS) -L/usr/local/lib/ -lmpi 
+LIBS          = $(SUBLIBS)  
 AR            = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ar cq
 RANLIB        = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib -s
 SED           = sed
@@ -222,6 +222,7 @@ DIST          = ../../../../Qt5.7.0/5.7/clang_64/mkspecs/features/spec_pre.prf \
 		../../../../Qt5.7.0/5.7/clang_64/mkspecs/features/qt_config.prf \
 		../../../../Qt5.7.0/5.7/clang_64/mkspecs/macx-clang/qmake.conf \
 		../../../../Qt5.7.0/5.7/clang_64/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		../../../../Qt5.7.0/5.7/clang_64/mkspecs/features/exclusive_builds.prf \
 		../../../../Qt5.7.0/5.7/clang_64/mkspecs/features/default_pre.prf \
 		../../../../Qt5.7.0/5.7/clang_64/mkspecs/features/mac/default_pre.prf \
@@ -409,6 +410,7 @@ Makefile: ParallelNSGAII.pro ../../../../Qt5.7.0/5.7/clang_64/mkspecs/macx-clang
 		../../../../Qt5.7.0/5.7/clang_64/mkspecs/features/qt_config.prf \
 		../../../../Qt5.7.0/5.7/clang_64/mkspecs/macx-clang/qmake.conf \
 		../../../../Qt5.7.0/5.7/clang_64/mkspecs/features/spec_post.prf \
+		.qmake.stash \
 		../../../../Qt5.7.0/5.7/clang_64/mkspecs/features/exclusive_builds.prf \
 		../../../../Qt5.7.0/5.7/clang_64/mkspecs/features/default_pre.prf \
 		../../../../Qt5.7.0/5.7/clang_64/mkspecs/features/mac/default_pre.prf \
@@ -565,6 +567,7 @@ Makefile: ParallelNSGAII.pro ../../../../Qt5.7.0/5.7/clang_64/mkspecs/macx-clang
 ../../../../Qt5.7.0/5.7/clang_64/mkspecs/features/qt_config.prf:
 ../../../../Qt5.7.0/5.7/clang_64/mkspecs/macx-clang/qmake.conf:
 ../../../../Qt5.7.0/5.7/clang_64/mkspecs/features/spec_post.prf:
+.qmake.stash:
 ../../../../Qt5.7.0/5.7/clang_64/mkspecs/features/exclusive_builds.prf:
 ../../../../Qt5.7.0/5.7/clang_64/mkspecs/features/default_pre.prf:
 ../../../../Qt5.7.0/5.7/clang_64/mkspecs/features/mac/default_pre.prf:

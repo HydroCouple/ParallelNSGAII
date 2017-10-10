@@ -4,7 +4,7 @@
 # define _GLOBAL_H_
 
 //#define USE_OPENMP
-#define USE_MPI
+//#define USE_MPI
 
 #ifdef __cplusplus
 extern "C" {

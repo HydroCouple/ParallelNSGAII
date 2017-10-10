@@ -4,6 +4,7 @@
 # include <stdlib.h>
 # include <math.h>
 # include <vector>
+# include <unistd.h>
 # include "rand.h"
 # include "problemdef.h"
 
@@ -59,8 +60,6 @@ void evaluate_pop (population *pop)
         mpi_recieve_inds_from_worker(pop, p);
       }
     }
-
-
   }
 #else
   {
@@ -82,7 +81,7 @@ void evaluate_ind (int index, individual *ind)
 {
   int j;
 
-  problemDefinition(ind->xreal, ind->xbin, ind->gene, ind->obj, ind->constr, problemOptions);
+  problemDefinition(currentGen, index, nreal, ind->xreal, nbin, ind->xbin, nbits, ind->gene, nobj, ind->obj, ncon, ind->constr, problemOptions);
 
   if (ncon==0)
   {
@@ -100,6 +99,12 @@ void evaluate_ind (int index, individual *ind)
       }
     }
   }
+
+//#ifdef QT_DEBUG
+  //expensive job simulation
+//  usleep(1e+3);
+  //#endif
+
   return;
 }
 
@@ -167,7 +172,7 @@ void mpi_recieve_inds_from_master(double *values, int size)
   individual *inds = new individual[numIndividuals];
   int *indexes = new int[numIndividuals];
 
-  //  printf("[%i] => [%i] Recieving |  No Ind: %i | Data Size: %i\n", 0 , procRank,numIndividuals, size);
+  printf("[%i] => [%i] Recieving |  No Ind: %i | Data Size: %i\n", 0 , procRank,numIndividuals, size);
 
   for(int i = 0; i < numIndividuals; i++)
   {
@@ -194,7 +199,7 @@ void mpi_recieve_inds_from_master(double *values, int size)
     deallocate_memory_ind(&inds[i]);
   }
 
-  //  printf("Sending [%i] => [%i] |  No Ind: %i | Data Size: %i\n", 0 , procRank,numIndividuals, size);
+  printf("Sending [%i] => [%i] |  No Ind: %i | Data Size: %i\n", 0 , procRank,numIndividuals, size);
 
   MPI_Send(data.data(),data.size(),MPI_DOUBLE,0,0,MPI_COMM_WORLD);
 

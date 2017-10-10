@@ -1,6 +1,6 @@
 # Makefile for compiling Parellized version of the NSGA-II source code
 USE_MPI = ""
-USE_OPENMP = ""
+#USE_OPENMP = ""
 
 ifdef USE_MPI
  CC=mpicxx
