@@ -1,24 +1,26 @@
 # Makefile for compiling Parellized version of the NSGA-II source code
 USE_MPI = ""
-#USE_OPENMP = ""
+USE_OPENMP = ""
 
 ifdef USE_MPI
- CC=mpicxx
+ CC=mpicc
+ CXX=mpicxx
  LD=mpicxx
  $(info  MPI is enabled)
 else
- CC=g++
+ CC=gcc
+ CXX=g++
  LD=g++
  $(info  MPI is disabled)
 endif
 
-# INCDIRS = -I/uufs/chpc.utah.edu/sys/installdir/intel/compilers_and_libraries_2017.0.098/linux/mpi/include64
-
+INCDIRS = -I/uufs/chpc.utah.edu/sys/installdir/intel/compilers_and_libraries_2017.0.098/linux/mpi/include64
+#INCDIRS = -I/uufs/chpc.utah.edu/sys/installdir/gcc/4.9.2/include
 
 CUSTOMDEFINES =""
 
 ifdef USE_OPENMP
-  CUSTOMDEFINES = -fopenmp
+  CUSTOMDEFINES = -fopenmp -g
  $(info  OpenMP is enabled)
 else
  $(info  OpenMP is disabled)

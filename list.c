@@ -44,5 +44,7 @@ list* del (list *node)
         temp->child->parent = temp;
     }
     free (node);
+    node = NULL;
+
     return (temp);
 }

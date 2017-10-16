@@ -99,6 +99,10 @@ void assign_rank_and_crowding_distance (population *new_pop)
     }
     while (orig->child!=NULL);
     free (orig);
+    orig = NULL;
+
     free (cur);
+    cur = NULL;
+
     return;
 }

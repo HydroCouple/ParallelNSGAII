@@ -1,12 +1,12 @@
 #!/bin/csh
 
 #SBATCH --account=usu-em
-#SBATCH --partition=usu-em
-#SBATCH --job-name=parallel_nsga2_1_1
+#SBATCH --partition=ember-freecycle
+#SBATCH --job-name=swmm_2_32
 #SBATCH --time=1-00:00:00
-#SBATCH --ntasks=1
+#SBATCH --ntasks=4
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task=12
 
 set cur_dir = $PWD
 echo "Current working directory: "$cur_dir
@@ -31,6 +31,11 @@ endif
 #load latest gcc
 echo "loading intel/2017.4.196 mvapich2"
 module load intel/2017.4.196 mvapich2
+
+module load ddt
+
+#echo "loading igcc/4.9.2 mvapich"
+#module load gcc/4.9.2 mvapich2
 echo ""
 echo "#==================================================================================================="
 
@@ -42,13 +47,50 @@ echo "#=========================================================================
 
 
 if ($perform_make =~ "Yes") then
-    make -f Makefile.orig clean
-    make -j 8 -f Makefile.orig
+
+
+    echo ""
+    echo "#==================================================================================================="
+    echo "Making SWMMParallelNSGAIILib"
+    echo "#==================================================================================================="
+    echo ""
+    cd ../SWMMParallelNSGAIILib/
+    make -f Makefile.chpc clean
+    rm -rf ./lib/libSWMMParallelNSGAIILib*
+    #find . -name "*gen*ind*" -type f -delete
+    make -j 8 -f Makefile.chpc all
+    
+
+    echo ""
+    echo "#==================================================================================================="
+    echo "Making SWMM"
+    echo "#==================================================================================================="
+    echo ""
+    cd ../SWMM_Source
+    make clean
+    rm -rf swmm
+    make -j 8
+
+
+    echo ""
+    echo "#==================================================================================================="
+    echo "Making ParallelNSGAII"
+    echo "#==================================================================================================="
+    echo ""
+    cd ../ParallelNSGAII
+    make -f Makefile.chpc clean
+    rm -rf parallelnsga2r
+    make -j 8 -f Makefile.chpc
+    cd ../RunConfig
+
 endif
 
 if ($run_hpc =~ "No") then
     echo "no hpc..."
-    mpirun -n 4 ./parallelnsga2r 0.1 ./input_data/zdt5.in
+    #gdb ../ParallelNSGAII/parallelnsga2r
+    ddt ../ParallelNSGAII/parallelnsga2r 0.1 ../SWMMParallelNSGAIILib/test_problem/swmm_opt.in
+    #mpirun -np 4 -genv MV2_ENABLE_AFINITY 0 -genv KMP_AFFINITY warnings,compact ../ParallelNSGAII/parallelnsga2r 0.1 ../SWMMParallelNSGAIILib/test_problem/testing/swmm_opt_v1.in
+    #mpirun -n 1 ../ParallelNSGAII/parallelnsga2r 0.1 ./input_data/zdt5.in
 else
 
     set omp_threads = 1
@@ -62,10 +104,10 @@ else
     
     echo "Omp number of threads: "$omp_threads
 
-    # setenv OMP_NUM_THREADS $omp_threads
+    setenv OMP_NUM_THREADS $omp_threads
 
     echo "running on hpc..."
     
-    srun ./parallelnsga2r 0.1 ./input_data/zdt5.in
+    mpirun -np $SLURM_NTASKS -genv MV2_ENABLE_AFINITY 0 -genv KMP_AFFINITY warnings,compact ../ParallelNSGAII/parallelnsga2r 0.1 ../SWMMParallelNSGAIILib/test_problem/swmm_opt.in
 
 endif

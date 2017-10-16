@@ -138,6 +138,7 @@ void fill_nondominated_sort (population *mixed_pop, population *new_pop)
         temp1 = pool;
         pool = pool->child;
         free (temp1);
+        temp1 = NULL;
     }
 
     while (elite!=NULL)
@@ -145,6 +146,7 @@ void fill_nondominated_sort (population *mixed_pop, population *new_pop)
         temp1 = elite;
         elite = elite->child;
         free (temp1);
+        temp1 = NULL;
     }
 
     return;
@@ -169,6 +171,9 @@ void crowding_fill (population *mixed_pop, population *new_pop, int count, int f
     {
         copy_ind(&mixed_pop->ind[dist[j]], &new_pop->ind[i]);
     }
+
     free (dist);
+    dist = NULL;
+
     return;
 }

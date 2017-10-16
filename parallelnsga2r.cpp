@@ -1,18 +1,18 @@
 /* NSGA-II routine (implementation of the 'main' function) */
 
-# include <stdio.h>
-# include <stdlib.h>
-# include <math.h>
-# include <fstream>
-# include <list>
-# include <sys/stat.h>
-# include <dlfcn.h>
-# include <vector>
-# include <stdio.h>
-# include <algorithm>
-# include "global.h"
-# include "rand.h"
-# include "problemdef.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <fstream>
+#include <list>
+#include <sys/stat.h>
+#include <dlfcn.h>
+#include <vector>
+#include <stdio.h>
+#include <algorithm>
+#include "global.h"
+#include "rand.h"
+#include "problemdef.h"
 
 #ifdef USE_MPI
 #include <mpi.h>
@@ -22,42 +22,39 @@
 #include <omp.h>
 #endif
 
-
-int nreal;
-int nbin;
-int nobj;
-int ncon;
-int popsize;
+int nreal = 0;
+int nbin = 0;
+int nobj = 0;
+int ncon = 0;
+int popsize = 0;
 double pcross_real;
 double pcross_bin;
 double pmut_real;
 double pmut_bin;
 double eta_c;
 double eta_m;
-int ngen;
-int nbinmut;
-int nrealmut;
-int nbincross;
-int nrealcross;
-int *nbits;
-double *min_realvar;
-double *max_realvar;
-double *min_binvar;
-double *max_binvar;
-int bitlength;
+int ngen = 0;
+int nbinmut = 0;
+int nrealmut = 0;
+int nbincross = 0;
+int nrealcross = 0;
+int *nbits = NULL;
+double *min_realvar = NULL;
+double *max_realvar = NULL;
+double *min_binvar = NULL;
+double *max_binvar = NULL;
+int bitlength = 0;
 int mpiProcessors = 1;
 int numThreads = 1;
 int procRank = 0;
 std::vector<std::string> problemOptions;
 problemDef problemDefinition = nullptr;
-int problemIndex = 0;
-std::string sharedLibraryPath;
-void *fhandle = nullptr;
+problemDefInitialize problemDefinitionInitialize = nullptr;
 int currentGen = 1;
 int max_nbits = 0;
 int DIE_TAG = 9999;
 
-std::vector<std::string> splitText(const std::string &text, const std::string& delim)
+std::vector<std::string> splitText(const std::string &text, const std::string &delim)
 {
   std::vector<std::string> parsed;
 
@@ -76,9 +73,9 @@ std::vector<std::string> splitText(const std::string &text, const std::string& d
   return parsed;
 }
 
-std::string fileExtension(const std::string& filePath)
+std::string fileExtension(const std::string &filePath)
 {
-  if(filePath.find(".") != std::string::npos)
+  if (filePath.find(".") != std::string::npos)
   {
     return filePath.substr(filePath.find_last_of("."));
   }
@@ -88,35 +85,34 @@ std::string fileExtension(const std::string& filePath)
   }
 }
 
-bool replace(std::string& str, const std::string& from, const std::string& to)
+bool replace(std::string &str, const std::string &from, const std::string &to)
 {
   size_t start_pos = str.find(from);
-  if(start_pos == std::string::npos)
+  if (start_pos == std::string::npos)
     return false;
   str.replace(start_pos, from.length(), to);
   return true;
 }
 
-void replaceAll(std::string& str, const std::string& from, const std::string& to)
+void replaceAll(std::string &str, const std::string &from, const std::string &to)
 {
-  if(from.empty())
+  if (from.empty())
     return;
 
   size_t start_pos = 0;
 
-  while((start_pos = str.find(from, start_pos)) != std::string::npos)
+  while ((start_pos = str.find(from, start_pos)) != std::string::npos)
   {
     str.replace(start_pos, from.length(), to);
     start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
   }
 }
 
-bool fileExists(const std::string& name)
+bool fileExists(const std::string &name)
 {
   struct stat buffer;
-  return (stat (name.c_str(), &buffer) == 0);
+  return (stat(name.c_str(), &buffer) == 0);
 }
-
 
 void abortNSGA(int rc = 0)
 {
@@ -124,6 +120,7 @@ void abortNSGA(int rc = 0)
   printf("abort called \n");
   MPI_Abort(MPI_COMM_WORLD, rc);
 #else
+  printf("abort called \n");
   exit(1);
 #endif
 }
@@ -260,7 +257,7 @@ void setProblemDefinitionFromIndex(int problemIndex)
   }
 }
 
-void setProblemDefinitionFromLibrary(const std::string& libraryPath, const std::string& functionName , void* handle)
+void setProblemDefinitionFromLibrary(const std::string &libraryPath, const std::string &functionName, const std::string& initializeFunctionName,  void * & handle)
 {
   if(fileExists(libraryPath))
   {
@@ -272,17 +269,29 @@ void setProblemDefinitionFromLibrary(const std::string& libraryPath, const std::
     if(handle)
     {
       problemDefinition = nullptr;
-      *reinterpret_cast<void**>(&problemDefinition) = dlsym(handle, functionName.c_str());
+      *reinterpret_cast<void **>(&problemDefinition) = dlsym(handle, functionName.c_str());
 
-      if(problemDefinition == nullptr)
+      if (problemDefinition == nullptr)
       {
-        printf("Could not open library function: %s" , libraryPath.c_str());
+        printf("Could not open library function: %s", functionName.c_str());
         abortNSGA();
+      }
+
+      if(initializeFunctionName.size())
+      {
+        problemDefinitionInitialize = nullptr;
+        *reinterpret_cast<void **>(&problemDefinitionInitialize) = dlsym(handle, initializeFunctionName.c_str());
+
+        if (problemDefinitionInitialize == nullptr)
+        {
+          printf("Could not open library function: %s", initializeFunctionName.c_str());
+          abortNSGA();
+        }
       }
     }
     else
     {
-      printf("Could not open library: %s" , libraryPath.c_str());
+      printf("Could not open library: %s", libraryPath.c_str());
       abortNSGA();
     }
 
@@ -290,9 +299,11 @@ void setProblemDefinitionFromLibrary(const std::string& libraryPath, const std::
   }
 }
 
-void closeLibrary(void* handle)
+void closeLibrary(void *&handle)
 {
-  if(handle != nullptr)
+  printf("Closing external library handle...\n");
+
+  if (handle != nullptr)
   {
 #ifdef _WIN32 // note the underscore: without it, it's not msdn official!
 
@@ -303,9 +314,9 @@ void closeLibrary(void* handle)
   }
 }
 
-int main (int argc, char **argv)
+int main(int argc, char **argv)
 {
-
+  void *fhandle = nullptr;
   bool printAllIndividuals = false;
 
   if (argc < 2)
@@ -318,11 +329,11 @@ int main (int argc, char **argv)
   {
     int allowed = 0;
     int rc = MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &allowed);
-    //int rc = MPI_Init(&argc,&argv);
+//    int rc = MPI_Init(&argc,&argv);
 
     if (rc != MPI_SUCCESS)
     {
-      printf ("Error starting MPI program. Terminating.\n");
+      printf("Error starting MPI program. Terminating.\n");
       abortNSGA(rc);
     }
     else
@@ -345,42 +356,48 @@ int main (int argc, char **argv)
   //read parameters
   seed = (double)atof(argv[1]);
 
-  if (seed<=0.0 || seed>=1.0)
+  if (seed <= 0.0 || seed >= 1.0)
   {
     printf("\n Entered seed value is wrong, seed value must be in (0,1) \n");
     abortNSGA();
   }
 
-  if(argc > 3)
+  if (argc > 3)
   {
-    if(std::string(argv[3]) == "-p")
+    if (std::string(argv[3]) == "-p")
+    {
       printAllIndividuals = true;
+    }
+    else
+    {
+      printAllIndividuals = false;
+    }
   }
 
   std::string inputfile(argv[2]);
   std::fstream inputFStream;
-  inputFStream.open(inputfile,std::fstream::in);
+  inputFStream.open(inputfile, std::fstream::in);
 
   std::string line;
 
-  if(inputFStream.is_open() && std::getline(inputFStream, line))
+  if (inputFStream.is_open() && std::getline(inputFStream, line))
   {
     popsize = stod(line);
 
-    if (popsize < 1)
+    if (popsize < 4 || (popsize % 4) != 0)
     {
-      printf("\n population size read is : %d",popsize);
-      printf("\n Wrong population size entered, hence exiting \n");
+      printf("\n population size read is : %d", popsize);
+      printf("\n Wrong population size (needs to be a multiple of 4 entered), hence exiting \n");
       abortNSGA();
     }
 
-    if(std::getline(inputFStream, line))
+    if (std::getline(inputFStream, line))
     {
       ngen = stoi(line);
 
-      if(ngen < 1)
+      if (ngen < 1)
       {
-        printf("\n number of generations read is : %d",ngen);
+        printf("\n number of generations read is : %d", ngen);
         printf("\n Wrong nuber of generations entered, hence exiting \n");
         abortNSGA();
       }
@@ -391,14 +408,13 @@ int main (int argc, char **argv)
       abortNSGA();
     }
 
-
-    if(std::getline(inputFStream, line))
+    if (std::getline(inputFStream, line))
     {
       nobj = stoi(line);
 
-      if(nobj < 1)
+      if (nobj < 1)
       {
-        printf("\n number of objectives entered is : %d",nobj);
+        printf("\n number of objectives entered is : %d", nobj);
         printf("\n Wrong number of objectives entered, hence exiting \n");
         abortNSGA();
       }
@@ -409,13 +425,13 @@ int main (int argc, char **argv)
       abortNSGA();
     }
 
-    if(std::getline(inputFStream, line))
+    if (std::getline(inputFStream, line))
     {
       ncon = stoi(line);
 
-      if(ncon < 0)
+      if (ncon < 0)
       {
-        printf("\n number of constraints entered is : %d",ncon);
+        printf("\n number of constraints entered is : %d", ncon);
         printf("\n Wrong number of constraints enetered, hence exiting \n");
         abortNSGA();
       }
@@ -426,13 +442,13 @@ int main (int argc, char **argv)
       abortNSGA();
     }
 
-    if(std::getline(inputFStream, line))
+    if (std::getline(inputFStream, line))
     {
       nreal = stoi(line);
 
-      if(nreal < 0)
+      if (nreal < 0)
       {
-        printf("\n number of real variables entered is : %d",nreal);
+        printf("\n number of real variables entered is : %d", nreal);
         printf("\n Wrong number of variables entered, hence exiting \n");
         abortNSGA();
       }
@@ -443,18 +459,18 @@ int main (int argc, char **argv)
       abortNSGA();
     }
 
-    if(nreal > 0)
+    if (nreal > 0)
     {
-      min_realvar = (double *)malloc(nreal*sizeof(double));
-      max_realvar = (double *)malloc(nreal*sizeof(double));
+      min_realvar = (double *)malloc(nreal * sizeof(double));
+      max_realvar = (double *)malloc(nreal * sizeof(double));
 
-      for(int i = 0 ; i < nreal; i++)
+      for (int i = 0; i < nreal; i++)
       {
-        if(std::getline(inputFStream, line))
+        if (std::getline(inputFStream, line))
         {
-          std::vector<std::string> split = splitText(line," ");
+          std::vector<std::string> split = splitText(line, " ");
 
-          if(split.size() == 2)
+          if (split.size() == 2)
           {
             min_realvar[i] = stod(split[0]);
             max_realvar[i] = stod(split[1]);
@@ -470,7 +486,6 @@ int main (int argc, char **argv)
             printf("\n File Ended Prematurely \n");
             abortNSGA();
           }
-
         }
         else
         {
@@ -479,13 +494,13 @@ int main (int argc, char **argv)
         }
       }
 
-      if(std::getline(inputFStream, line))
+      if (std::getline(inputFStream, line))
       {
         pcross_real = stod(line);
 
-        if(pcross_real<0.0 || pcross_real>1.0)
+        if (pcross_real < 0.0 || pcross_real > 1.0)
         {
-          printf("\n Probability of crossover entered is : %e",pcross_real);
+          printf("\n Probability of crossover entered is : %e", pcross_real);
           printf("\n Entered value of probability of crossover of real variables is out of bounds, hence exiting \n");
           abortNSGA();
         }
@@ -496,13 +511,13 @@ int main (int argc, char **argv)
         abortNSGA();
       }
 
-      if(std::getline(inputFStream, line))
+      if (std::getline(inputFStream, line))
       {
         pmut_real = stod(line);
 
-        if(pmut_real < 0.0 || pmut_real > 1.0)
+        if (pmut_real < 0.0 || pmut_real > 1.0)
         {
-          printf("\n Probability of mutation entered is : %e",pmut_real);
+          printf("\n Probability of mutation entered is : %e", pmut_real);
           printf("\n Entered value of probability of mutation of real variables is out of bounds, hence exiting \n");
 
           abortNSGA();
@@ -514,13 +529,13 @@ int main (int argc, char **argv)
         abortNSGA();
       }
 
-      if(std::getline(inputFStream, line))
+      if (std::getline(inputFStream, line))
       {
         eta_c = stod(line);
 
-        if(eta_c <= 0.0)
+        if (eta_c <= 0.0)
         {
-          printf("\n The value entered is : %e",eta_c);
+          printf("\n The value entered is : %e", eta_c);
           printf("\n Wrong value of distribution index for crossover entered, hence exiting \n");
 
           abortNSGA();
@@ -532,13 +547,13 @@ int main (int argc, char **argv)
         abortNSGA();
       }
 
-      if(std::getline(inputFStream, line))
+      if (std::getline(inputFStream, line))
       {
         eta_m = stod(line);
 
-        if(eta_m <= 0.0)
+        if (eta_m <= 0.0)
         {
-          printf("\n The value entered is : %e",eta_m);
+          printf("\n The value entered is : %e", eta_m);
           printf("\n Wrong value of distribution index for mutation entered, hence exiting \n");
 
           abortNSGA();
@@ -549,17 +564,16 @@ int main (int argc, char **argv)
         printf("\n File Ended Prematurely \n");
         abortNSGA();
       }
-
     }
 
-    if(std::getline(inputFStream, line))
+    if (std::getline(inputFStream, line))
     {
       nbin = stod(line);
 
-      if(nbin < 0.0)
+      if (nbin < 0.0)
       {
-        printf ("\n number of binary variables entered is : %d",nbin);
-        printf ("\n Wrong number of binary variables entered, hence exiting \n");
+        printf("\n number of binary variables entered is : %d", nbin);
+        printf("\n Wrong number of binary variables entered, hence exiting \n");
         abortNSGA();
       }
     }
@@ -569,19 +583,19 @@ int main (int argc, char **argv)
       abortNSGA();
     }
 
-    if(nbin > 0)
+    if (nbin > 0)
     {
-      nbits = (int *)malloc(nbin*sizeof(int));
-      min_binvar = (double *)malloc(nbin*sizeof(double));
-      max_binvar = (double *)malloc(nbin*sizeof(double));
+      nbits = (int *)malloc(nbin * sizeof(int));
+      min_binvar = (double *)malloc(nbin * sizeof(double));
+      max_binvar = (double *)malloc(nbin * sizeof(double));
 
       for (int i = 0; i < nbin; i++)
       {
-        if(std::getline(inputFStream, line))
+        if (std::getline(inputFStream, line))
         {
-          std::vector<std::string> split = splitText(line," ");
+          std::vector<std::string> split = splitText(line, " ");
 
-          if(split.size() == 3)
+          if (split.size() == 3)
           {
             int nbitssize = stoi(split[0]);
             nbits[i] = nbitssize;
@@ -603,15 +617,15 @@ int main (int argc, char **argv)
         }
       }
 
-      max_nbits = *std::max_element(nbits,nbits);
+      max_nbits = *std::max_element(nbits, nbits);
 
-      if(std::getline(inputFStream, line))
+      if (std::getline(inputFStream, line))
       {
         pcross_bin = stod(line);
 
-        if(pcross_bin< 0.0 || pcross_bin > 1.0)
+        if (pcross_bin < 0.0 || pcross_bin > 1.0)
         {
-          printf("\n Probability of crossover entered is : %e",pcross_bin);
+          printf("\n Probability of crossover entered is : %e", pcross_bin);
           printf("\n Entered value of probability of crossover of binary variables is out of bounds, hence exiting \n");
           abortNSGA();
         }
@@ -622,14 +636,13 @@ int main (int argc, char **argv)
         abortNSGA();
       }
 
-
-      if(std::getline(inputFStream, line))
+      if (std::getline(inputFStream, line))
       {
         pmut_bin = stod(line);
 
-        if(pmut_bin<0.0 || pmut_bin>1.0)
+        if (pmut_bin < 0.0 || pmut_bin > 1.0)
         {
-          printf("\n Probability of mutation entered is : %e",pmut_bin);
+          printf("\n Probability of mutation entered is : %e", pmut_bin);
           printf("\n Entered value of probability  of mutation of binary variables is out of bounds, hence exiting \n");
           abortNSGA();
         }
@@ -641,31 +654,37 @@ int main (int argc, char **argv)
       }
     }
 
-    if(std::getline(inputFStream,line))
+    if (std::getline(inputFStream, line))
     {
-      std::vector<std::string> split = splitText(line," ");
+      std::vector<std::string> split = splitText(line, " ");
 
-      if(split.size() >= 2)
+      if (split.size() >= 2)
       {
-        if(split[0] == "-t")
+        if (split[0] == "-t")
         {
-          problemIndex =  stoi(split[1]);
+          int problemIndex = stoi(split[1]);
           setProblemDefinitionFromIndex(problemIndex);
         }
-        else if(split[0] == "-f" && split.size() > 2)
+        else if (split[0] == "-f" && split.size() > 2)
         {
           std::string tempSharedLibraryPath = split[1];
 
-          if(fileExists(tempSharedLibraryPath))
+          if (fileExists(tempSharedLibraryPath))
           {
+            std::string initializationFunction ="";
+
             std::string functionName = split[2];
-            setProblemDefinitionFromLibrary(tempSharedLibraryPath,functionName,fhandle);
-            sharedLibraryPath = tempSharedLibraryPath;
-            problemIndex = -1;
+
+            if(split.size() > 3)
+            {
+              initializationFunction = split[3];
+            }
+
+            setProblemDefinitionFromLibrary(tempSharedLibraryPath, functionName, initializationFunction, fhandle);
           }
           else
           {
-            printf ("Could not open inputfile. Terminating.\n");
+            printf("Could not open inputfile. Terminating.\n");
             abortNSGA();
           }
         }
@@ -674,21 +693,25 @@ int main (int argc, char **argv)
 
     problemOptions.clear();
 
-    while (std::getline(inputFStream,line))
+    while (std::getline(inputFStream, line))
     {
-//      printf("%s\n", line.c_str());
       problemOptions.push_back(line);
+    }
+
+    if(problemDefinitionInitialize)
+    {
+      problemDefinitionInitialize(procRank, problemOptions);
     }
 
     inputFStream.close();
   }
   else
   {
-    printf ("Could not open inputfile. Terminating.\n");
+    printf("Could not open inputfile. Terminating.\n");
     abortNSGA();
   }
 
-  if(procRank == 0)
+  if (procRank == 0)
   {
 
     population *parent_pop;
@@ -696,83 +719,95 @@ int main (int argc, char **argv)
     population *mixed_pop;
 
     std::string ext = fileExtension(inputfile);
-    std::string tempFile = inputfile; replace(tempFile,ext,"_initial_pop.out");
-    FILE *fpt1 = fopen(tempFile.c_str(),"w");
+    std::string tempFile = inputfile;
+    replace(tempFile, ext, "_initial_pop.out");
+    FILE *fpt1 = fopen(tempFile.c_str(), "w");
 
-    tempFile = inputfile; replace(tempFile,ext,"_final_pop.out");
-    FILE *fpt2 = fopen(tempFile.c_str(),"w");
+    tempFile = inputfile;
+    replace(tempFile, ext, "_final_pop.out");
+    FILE *fpt2 = fopen(tempFile.c_str(), "w");
 
-    tempFile = inputfile; replace(tempFile,ext,"_best_pop.out");
-    FILE *fpt3 = fopen(tempFile.c_str(),"w");
+    tempFile = inputfile;
+    replace(tempFile, ext, "_best_pop.out");
+    FILE *fpt3 = fopen(tempFile.c_str(), "w");
 
-    FILE *fpt4 = nullptr;
+    FILE *fpt4 = NULL;
 
-    if(printAllIndividuals)
+    if (printAllIndividuals)
     {
-      tempFile = inputfile; replace(tempFile,ext,"_all_pop.out");
-      fpt4 = fopen(tempFile.c_str(),"w");
+      tempFile = inputfile;
+      replace(tempFile, ext, "_all_pop.out");
+      fpt4 = fopen(tempFile.c_str(), "w");
+      printf("Will print all individuals \n");
+    }
+    else
+    {
+      printf("Will not print all individuals \n");
     }
 
-    tempFile = inputfile; replace(tempFile,ext,"_params.out");
-    FILE *fpt5 = fopen(tempFile.c_str(),"w");
+    tempFile = inputfile;
+    replace(tempFile, ext, "_params.out");
+    FILE *fpt5 = fopen(tempFile.c_str(), "w");
 
-    fprintf(fpt1,"# This file contains the data of initial population\n");
-    fprintf(fpt2,"# This file contains the data of final population\n");
-    fprintf(fpt3,"# This file contains the data of final feasible population (if found)\n");
+    fprintf(fpt1, "# This file contains the data of initial population\n");
+    fprintf(fpt2, "# This file contains the data of final population\n");
+    fprintf(fpt3, "# This file contains the data of final feasible population (if found)\n");
 
-    if(printAllIndividuals)
-      fprintf(fpt4,"# This file contains the data of all generations\n");
+    if (printAllIndividuals)
+    {
+      fprintf(fpt4, "# This file contains the data of all generations\n");
+    }
 
-    fprintf(fpt5,"# This file contains information about inputs as read by the program\n");
-
+    fprintf(fpt5, "# This file contains information about inputs as read by the program\n");
 
     printf("\nInput data successfully read, now performing initialization\n");
-    fprintf(fpt5,"\n Population size = %d",popsize);
-    fprintf(fpt5,"\n Number of generations = %d",ngen);
-    fprintf(fpt5,"\n Number of objective functions = %d",nobj);
-    fprintf(fpt5,"\n Number of constraints = %d",ncon);
-    fprintf(fpt5,"\n Number of real variables = %d",nreal);
+    fprintf(fpt5, "\n Population size = %d", popsize);
+    fprintf(fpt5, "\n Number of generations = %d", ngen);
+    fprintf(fpt5, "\n Number of objective functions = %d", nobj);
+    fprintf(fpt5, "\n Number of constraints = %d", ncon);
+    fprintf(fpt5, "\n Number of real variables = %d", nreal);
 
     if (nreal > 0)
     {
       for (int i = 0; i < nreal; i++)
       {
-        fprintf(fpt5,"\n Lower limit of real variable %d = %e",i+1,min_realvar[i]);
-        fprintf(fpt5,"\n Upper limit of real variable %d = %e",i+1,max_realvar[i]);
+        fprintf(fpt5, "\n Lower limit of real variable %d = %e", i + 1, min_realvar[i]);
+        fprintf(fpt5, "\n Upper limit of real variable %d = %e", i + 1, max_realvar[i]);
       }
 
-      fprintf(fpt5,"\n Probability of crossover of real variable = %e",pcross_real);
-      fprintf(fpt5,"\n Probability of mutation of real variable = %e",pmut_real);
-      fprintf(fpt5,"\n Distribution index for crossover = %e",eta_c);
-      fprintf(fpt5,"\n Distribution index for mutation = %e",eta_m);
-
+      fprintf(fpt5, "\n Probability of crossover of real variable = %e", pcross_real);
+      fprintf(fpt5, "\n Probability of mutation of real variable = %e", pmut_real);
+      fprintf(fpt5, "\n Distribution index for crossover = %e", eta_c);
+      fprintf(fpt5, "\n Distribution index for mutation = %e", eta_m);
     }
 
-    fprintf(fpt5,"\n Number of binary variables = %d",nbin);
+    fprintf(fpt5, "\n Number of binary variables = %d", nbin);
 
     if (nbin > 0)
     {
-      for (int  i= 0; i < nbin ; i++)
+      for (int i = 0; i < nbin; i++)
       {
-        fprintf(fpt5,"\n Number of bits for binary variable %d = %d",i+1,nbits[i]);
-        fprintf(fpt5,"\n Lower limit of binary variable %d = %e",i+1,min_binvar[i]);
-        fprintf(fpt5,"\n Upper limit of binary variable %d = %e",i+1,max_binvar[i]);
+        fprintf(fpt5, "\n Number of bits for binary variable %d = %d", i + 1, nbits[i]);
+        fprintf(fpt5, "\n Lower limit of binary variable %d = %e", i + 1, min_binvar[i]);
+        fprintf(fpt5, "\n Upper limit of binary variable %d = %e", i + 1, max_binvar[i]);
       }
 
-      fprintf(fpt5,"\n Probability of crossover of binary variable = %e",pcross_bin);
-      fprintf(fpt5,"\n Probability of mutation of binary variable = %e",pmut_bin);
+      fprintf(fpt5, "\n Probability of crossover of binary variable = %e", pcross_bin);
+      fprintf(fpt5, "\n Probability of mutation of binary variable = %e", pmut_bin);
     }
 
-    fprintf(fpt5,"\n Seed for random number generator = %e",seed);
+    fprintf(fpt5, "\n Seed for random number generator = %e", seed);
 
     bitlength = 0;
 
-    fprintf(fpt1,"# of objectives = %d, # of constraints = %d, # of real_var = %d, # of bits of bin_var = %d, constr_violation, rank, crowding_distance\n",nobj,ncon,nreal,bitlength);
-    fprintf(fpt2,"# of objectives = %d, # of constraints = %d, # of real_var = %d, # of bits of bin_var = %d, constr_violation, rank, crowding_distance\n",nobj,ncon,nreal,bitlength);
-    fprintf(fpt3,"# of objectives = %d, # of constraints = %d, # of real_var = %d, # of bits of bin_var = %d, constr_violation, rank, crowding_distance\n",nobj,ncon,nreal,bitlength);
+    fprintf(fpt1, "# of objectives = %d, # of constraints = %d, # of real_var = %d, # of bits of bin_var = %d, constr_violation, rank, crowding_distance\n", nobj, ncon, nreal, bitlength);
+    fprintf(fpt2, "# of objectives = %d, # of constraints = %d, # of real_var = %d, # of bits of bin_var = %d, constr_violation, rank, crowding_distance\n", nobj, ncon, nreal, bitlength);
+    fprintf(fpt3, "# of objectives = %d, # of constraints = %d, # of real_var = %d, # of bits of bin_var = %d, constr_violation, rank, crowding_distance\n", nobj, ncon, nreal, bitlength);
 
-    if(printAllIndividuals)
-      fprintf(fpt4,"# of objectives = %d, # of constraints = %d, # of real_var = %d, # of bits of bin_var = %d, constr_violation, rank, crowding_distance\n",nobj,ncon,nreal,bitlength);
+    if (printAllIndividuals)
+    {
+      fprintf(fpt4, "# of objectives = %d, # of constraints = %d, # of real_var = %d, # of bits of bin_var = %d, constr_violation, rank, crowding_distance\n", nobj, ncon, nreal, bitlength);
+    }
 
     nbinmut = 0;
     nrealmut = 0;
@@ -783,27 +818,27 @@ int main (int argc, char **argv)
     child_pop = (population *)malloc(sizeof(population));
     mixed_pop = (population *)malloc(sizeof(population));
 
-    allocate_memory_pop (parent_pop, popsize);
-    allocate_memory_pop (child_pop, popsize);
-    allocate_memory_pop (mixed_pop, 2*popsize);
+    allocate_memory_pop(parent_pop, popsize);
+    allocate_memory_pop(child_pop, popsize);
+    allocate_memory_pop(mixed_pop, 2 * popsize);
 
     randomize();
 
-    initialize_pop (parent_pop);
+    initialize_pop(parent_pop);
 
     printf("\nInitialization done, now computing first generation\n");
 
     decode_pop(parent_pop);
 
-    evaluate_pop (parent_pop);
+    evaluate_pop(parent_pop);
 
-    assign_rank_and_crowding_distance (parent_pop);
+    assign_rank_and_crowding_distance(parent_pop);
 
-    report_pop (parent_pop, fpt1);
+    report_pop(parent_pop, fpt1);
 
     if(printAllIndividuals)
     {
-      fprintf(fpt4,"# gen = 1\n");
+      fprintf(fpt4, "# gen = 1\n");
       report_pop(parent_pop, fpt4);
     }
 
@@ -813,45 +848,50 @@ int main (int argc, char **argv)
     fflush(fpt1);
     fflush(fpt2);
     fflush(fpt3);
-    fflush(fpt4);
+
+    if (printAllIndividuals)
+    {
+      fflush(fpt4);
+    }
+
     fflush(fpt5);
 
     for (int i = 2; i <= ngen; i++)
     {
       currentGen = i;
-      selection (parent_pop, child_pop);
-      mutation_pop (child_pop);
+      selection(parent_pop, child_pop);
+      mutation_pop(child_pop);
       decode_pop(child_pop);
       evaluate_pop(child_pop);
-      merge (parent_pop, child_pop, mixed_pop);
-      fill_nondominated_sort (mixed_pop, parent_pop);
+      merge(parent_pop, child_pop, mixed_pop);
+      fill_nondominated_sort(mixed_pop, parent_pop);
       /* Comment following three lines if information for all
         generations is not desired, it will speed up the execution */
 
-      if(printAllIndividuals)
+      if (printAllIndividuals)
       {
-        fprintf(fpt4,"# gen = %d\n",i);
-        report_pop(parent_pop,fpt4);
-        //        fflush(fpt4);
+        fprintf(fpt4, "# gen = %d\n", i);
+        report_pop(parent_pop, fpt4);
+        fflush(fpt4);
       }
 
-      printf("\n gen = %d\n",i);
+      printf("\n gen = %d\n", i);
     }
 
     printf("\n Generations finished, now reporting solutions\n");
-    report_pop(parent_pop,fpt2);
-    report_feasible(parent_pop,fpt3);
+    report_pop(parent_pop, fpt2);
+    report_feasible(parent_pop, fpt3);
 
-    if (nreal!=0)
+    if (nreal > 0)
     {
-      fprintf(fpt5,"\n Number of crossover of real variable = %d",nrealcross);
-      fprintf(fpt5,"\n Number of mutation of real variable = %d",nrealmut);
+      fprintf(fpt5, "\n Number of crossover of real variable = %d", nrealcross);
+      fprintf(fpt5, "\n Number of mutation of real variable = %d", nrealmut);
     }
 
-    if (nbin!=0)
+    if (nbin > 0)
     {
-      fprintf(fpt5,"\n Number of crossover of binary variable = %d",nbincross);
-      fprintf(fpt5,"\n Number of mutation of binary variable = %d",nbinmut);
+      fprintf(fpt5, "\n Number of crossover of binary variable = %d", nbincross);
+      fprintf(fpt5, "\n Number of mutation of binary variable = %d", nbinmut);
     }
 
     fflush(stdout);
@@ -859,19 +899,22 @@ int main (int argc, char **argv)
     fflush(fpt1);
     fflush(fpt2);
     fflush(fpt3);
-    if(printAllIndividuals)
+
+    if (printAllIndividuals)
+    {
       fflush(fpt4);
+    }
+
     fflush(fpt5);
 
     fclose(fpt1);
     fclose(fpt2);
     fclose(fpt3);
-    if(printAllIndividuals)
+    if (printAllIndividuals)
       fclose(fpt4);
     fclose(fpt5);
 
-
-    if (nbin!=0)
+    if (nbin > 0)
     {
       for (int i = 0; i < nbin; i++)
       {
@@ -879,31 +922,27 @@ int main (int argc, char **argv)
       }
     }
 
-    if (nreal!=0)
+    if (nreal > 0)
     {
-      free (min_realvar);
-      free (max_realvar);
+      free(min_realvar); min_realvar = NULL;
+      free(max_realvar); max_realvar = NULL;
     }
 
-    if (nbin!=0)
+    if (nbin > 0)
     {
-      free (min_binvar);
-      free (max_binvar);
-      free (nbits);
+      free(min_binvar); min_binvar = NULL;
+      free(max_binvar); max_binvar = NULL;
+      free(nbits); nbits = NULL;
     }
 
-    deallocate_memory_pop (parent_pop, popsize);
-    deallocate_memory_pop (child_pop, popsize);
-    deallocate_memory_pop (mixed_pop, 2*popsize);
+    deallocate_memory_pop(parent_pop, popsize);
+    deallocate_memory_pop(child_pop, popsize);
+    deallocate_memory_pop(mixed_pop, 2 * popsize);
 
-    free (parent_pop);
-    free (child_pop);
-    free (mixed_pop);
+    free(parent_pop); parent_pop = NULL;
+    free(child_pop); child_pop = NULL;
+    free(mixed_pop); mixed_pop = NULL;
 
-    if(fhandle)
-    {
-      closeLibrary(fhandle);
-    }
   }
 #ifdef USE_MPI
   else
@@ -911,16 +950,17 @@ int main (int argc, char **argv)
     MPI_Status status;
 
     int result = 0;
-    int dataSize  = 0;
+    int dataSize = 0;
 
-    while((result = MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status)) == MPI_SUCCESS && status.MPI_TAG != DIE_TAG &&
-          (result = MPI_Get_count(&status,MPI_DOUBLE, &dataSize)) == MPI_SUCCESS && dataSize > 0)
+    while ((result = MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status)) == MPI_SUCCESS && status.MPI_TAG != DIE_TAG &&
+           (result = MPI_Get_count(&status, MPI_DOUBLE, &dataSize)) == MPI_SUCCESS && dataSize > 0)
     {
-      double* data = new double[dataSize];
+
+      double *data = new double[dataSize];
 
       result = MPI_Recv(data, dataSize, MPI_DOUBLE, status.MPI_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
-      if(result == MPI_SUCCESS)
+      if (result == MPI_SUCCESS)
       {
         mpi_recieve_inds_from_master(data, dataSize);
       }
@@ -950,15 +990,23 @@ int main (int argc, char **argv)
         break;
     }
   }
+#endif
 
-  if(procRank == 0 && mpiProcessors > 1)
+  if (fhandle)
+  {
+    closeLibrary(fhandle);
+  }
+
+#ifdef USE_MPI
+
+  if (procRank == 0 && mpiProcessors > 1)
   {
     printf("kill all children\n");
 
-    for(int i = 1; i < mpiProcessors; i++)
+    for (int i = 1; i < mpiProcessors; i++)
     {
       double test = 0;
-      MPI_Send(&test,1,MPI_DOUBLE,i,DIE_TAG, MPI_COMM_WORLD);
+      MPI_Send(&test, 1, MPI_DOUBLE, i, DIE_TAG, MPI_COMM_WORLD);
     }
   }
 
@@ -967,9 +1015,7 @@ int main (int argc, char **argv)
   MPI_Finalize();
 
   printf("Finalized Proc: % i\n", procRank);
-
-  return 0;
-
 #endif
 
+  return 0;
 }

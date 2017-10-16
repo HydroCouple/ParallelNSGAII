@@ -24,6 +24,7 @@ moc_*.h
 qrc_*.cpp
 ui_*.h
 *build-*
+build/*
 
 # QtCreator
 
@@ -35,7 +36,7 @@ ui_*.h
 
 # QtCtreator CMake
 CMakeLists.txt.user*
-
+*.xlsx
 
 #custom
 parallelnsga2r

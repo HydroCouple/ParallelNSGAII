@@ -9,7 +9,7 @@
 # include "problemdef.h"
 
 #ifdef USE_OPENMP
- # include <omp.h>
+# include <omp.h>
 #endif
 
 /* Routine to evaluate objective function values and constraints for a population */
@@ -34,21 +34,19 @@ void evaluate_pop (population *pop)
 #ifdef USE_OPENMP
 #pragma omp parallel for
 #endif
-      for(int i = 0; i < inds_per_mpi_task.quot; i++)
+      for(int i = 0; i < inds_per_mpi_task.quot + inds_per_mpi_task.rem; i++)
       {
-        evaluate_ind(i, &pop->ind[i]);
+        if(i < inds_per_mpi_task.quot)
+        {
+          evaluate_ind(i, &pop->ind[i]);
+        }
+        else
+        {
+          int start = (mpiProcessors * inds_per_mpi_task.quot) + (i - inds_per_mpi_task.quot);
+          evaluate_ind(start, &pop->ind[start]);
+        }
       }
     }
-
-
-#ifdef USE_OPENMP
-#pragma omp parallel for
-#endif
-    for(int i = 0; i < inds_per_mpi_task.rem; i++)
-    {
-      evaluate_ind(i, &(pop->ind[i]));
-    }
-
 
     if(inds_per_mpi_task.quot)
     {
@@ -83,7 +81,7 @@ void evaluate_ind (int index, individual *ind)
 
   problemDefinition(currentGen, index, nreal, ind->xreal, nbin, ind->xbin, nbits, ind->gene, nobj, ind->obj, ncon, ind->constr, problemOptions);
 
-  if (ncon==0)
+  if (ncon == 0)
   {
     ind->constr_violation = 0.0;
   }
@@ -91,19 +89,17 @@ void evaluate_ind (int index, individual *ind)
   {
     ind->constr_violation = 0.0;
 
-    for (j=0; j<ncon; j++)
+    if(ncon > 0)
     {
-      if (ind->constr[j]<0.0)
+      for (j= 0; j < ncon; j++)
       {
-        ind->constr_violation += ind->constr[j];
+        if (ind->constr[j] < 0.0)
+        {
+          ind->constr_violation += ind->constr[j];
+        }
       }
     }
   }
-
-//#ifdef QT_DEBUG
-  //expensive job simulation
-//  usleep(1e+3);
-  //#endif
 
   return;
 }
@@ -128,7 +124,7 @@ void mpi_send_inds_to_worker(population *pop, int start, int length, int mpiProc
 
     printf("Sending [%i] => [%i] |  No Ind: %i | Data Size: %i\n", procRank, mpiProcessor, length, (int)data.size());
 
-    MPI_Send(data.data() , data.size() , MPI_DOUBLE, mpiProcessor, 0, MPI_COMM_WORLD);
+    MPI_Send(&data[0] , data.size() , MPI_DOUBLE, mpiProcessor, 0, MPI_COMM_WORLD);
   }
 #else
   {
@@ -148,18 +144,24 @@ void mpi_send_inds_to_worker(population *pop, int start, int length, int mpiProc
 
 void mpi_serialize_ind_from_master(individual *ind, std::vector<double> &data)
 {
-  for(int i = 0; i < nreal; i++)
+  if(nreal > 0)
   {
-    data.push_back(ind->xreal[i]);
+    for(int i = 0; i < nreal; i++)
+    {
+      data.push_back(ind->xreal[i]);
+    }
   }
 
-  for(int i = 0 ; i < nbin ; i++)
+  if(nbin > 0)
   {
-    data.push_back(ind->xbin[i]);
-
-    for(int j = 0 ; j < nbits[i]; j++)
+    for(int i = 0 ; i < nbin ; i++)
     {
-      data.push_back(ind->gene[i][j]);
+      data.push_back(ind->xbin[i]);
+
+      for(int j = 0 ; j < nbits[i]; j++)
+      {
+        data.push_back(ind->gene[i][j]);
+      }
     }
   }
 }
@@ -169,10 +171,13 @@ void mpi_recieve_inds_from_master(double *values, int size)
   currentGen = values[0];
   int numIndividuals = values[1];
   int currPos = 2;
-  individual *inds = new individual[numIndividuals];
-  int *indexes = new int[numIndividuals];
+
 
   printf("[%i] => [%i] Recieving |  No Ind: %i | Data Size: %i\n", 0 , procRank,numIndividuals, size);
+
+  individual *inds = (individual*)malloc(size*sizeof(numIndividuals));
+  int *indexes = new int[numIndividuals];
+
 
   for(int i = 0; i < numIndividuals; i++)
   {
@@ -196,51 +201,71 @@ void mpi_recieve_inds_from_master(double *values, int size)
   {
     data.push_back(indexes[i]);
     mpi_serialize_ind_from_worker(&inds[i], data);
+  }
+
+  printf("Sending [%i] => [%i] |  No Ind: %i | Data Size: %i\n", procRank, 0, numIndividuals, size);
+
+  MPI_Send(&data[0],data.size(),MPI_DOUBLE,0,0,MPI_COMM_WORLD);
+
+  for(int i = 0; i < numIndividuals; i++)
+  {
     deallocate_memory_ind(&inds[i]);
   }
 
-  printf("Sending [%i] => [%i] |  No Ind: %i | Data Size: %i\n", 0 , procRank,numIndividuals, size);
 
-  MPI_Send(data.data(),data.size(),MPI_DOUBLE,0,0,MPI_COMM_WORLD);
+  free(inds);
+  inds = NULL;
 
-  delete[] inds;
   delete[] indexes;
+
 }
 
 void mpi_desrialize_ind_from_master(individual *ind, double *values, int &currentPos)
 {
-
-  for(int i = 0; i < nreal; i++)
+  if(nreal > 0)
   {
-    ind->xreal[i] = values[currentPos]; currentPos++;
+    for(int i = 0; i < nreal; i++)
+    {
+      ind->xreal[i] = values[currentPos]; currentPos++;
+    }
   }
 
-  for(int i = 0 ; i < nbin ; i++)
+  if(nbin > 0)
   {
-    ind->xbin[i] = values[currentPos]; currentPos++;
-
-    for(int j = 0 ; j < nbits[i]; j++)
+    for(int i = 0 ; i < nbin ; i++)
     {
-      ind->gene[i][j] = values[currentPos]; currentPos++;
+      ind->xbin[i] = values[currentPos]; currentPos++;
+
+      for(int j = 0 ; j < nbits[i]; j++)
+      {
+        ind->gene[i][j] = values[currentPos]; currentPos++;
+      }
     }
   }
 }
 
 void mpi_serialize_ind_from_worker(individual *ind, std::vector<double> &data)
 {
-  for(int i = 0; i < nobj; i++)
+  if(nobj > 0)
   {
-    data.push_back(ind->obj[i]);
+    for(int i = 0; i < nobj; i++)
+    {
+      data.push_back(ind->obj[i]);
+    }
   }
 
-  for(int i = 0; i < ncon; i++)
+  if(ncon > 0)
   {
-    data.push_back(ind->constr[i]);
+    for(int i = 0; i < ncon; i++)
+    {
+      data.push_back(ind->constr[i]);
+    }
   }
 }
 
 void mpi_recieve_inds_from_worker(population *pop, int mpiProcessor)
 {
+
   MPI_Status status;
 
   int result = MPI_Probe(mpiProcessor, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
@@ -252,15 +277,16 @@ void mpi_recieve_inds_from_worker(population *pop, int mpiProcessor)
         int dataSize  = 0;
         MPI_Get_count(&status,MPI_DOUBLE, &dataSize);
 
-        if(dataSize)
+        if(dataSize > 0)
         {
           double* data = new double[dataSize];
 
-          result = MPI_Recv(data, dataSize, MPI_DOUBLE, status.MPI_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+          result = MPI_Recv(data, dataSize, MPI_DOUBLE, mpiProcessor, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
           if(result == MPI_SUCCESS)
           {
-            int indLength = data[0];int currPos = 1;
+            int indLength = data[0];
+            int currPos = 1;
 
             printf("[%i] => [%i] Recieving |  No Ind: %i | Data Size: %i\n", mpiProcessor, procRank,indLength, dataSize);
 
@@ -298,25 +324,31 @@ void mpi_recieve_inds_from_worker(population *pop, int mpiProcessor)
 
 void mpi_desrialize_ind_from_worker(individual *ind, double *values, int &currentPos)
 {
-  for(int i = 0; i < nobj; i++)
+  if(nobj > 0)
   {
-    ind->obj[i] = values[currentPos]; currentPos++;
+    for(int i = 0; i < nobj; i++)
+    {
+      ind->obj[i] = values[currentPos]; currentPos++;
+    }
   }
 
-  for(int i = 0; i < ncon; i++)
+  if(ncon > 0)
   {
-    ind->constr[i] = values[currentPos]; currentPos++;
+    for(int i = 0; i < ncon; i++)
+    {
+      ind->constr[i] = values[currentPos]; currentPos++;
+    }
   }
 
-  if (ncon==0)
+  if (ncon == 0)
   {
     ind->constr_violation = 0.0;
   }
-  else
+  else if(ncon > 0)
   {
     ind->constr_violation = 0.0;
 
-    for (int j=0; j<ncon; j++)
+    for (int j = 0; j < ncon; j++)
     {
       if (ind->constr[j]<0.0)
       {

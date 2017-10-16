@@ -15,46 +15,61 @@ void assign_crowding_distance_list (population *pop, list *lst, int front_size)
     int i, j;
     list *temp;
     temp = lst;
+
     if (front_size==1)
     {
         pop->ind[lst->index].crowd_dist = INF;
         return;
     }
+
     if (front_size==2)
     {
         pop->ind[lst->index].crowd_dist = INF;
         pop->ind[lst->child->index].crowd_dist = INF;
         return;
     }
+
     obj_array = (int **)malloc(nobj*sizeof(int));
     dist = (int *)malloc(front_size*sizeof(int));
+
     for (i=0; i<nobj; i++)
     {
         obj_array[i] = (int *)malloc(front_size*sizeof(int));
     }
+
     for (j=0; j<front_size; j++)
     {
         dist[j] = temp->index;
         temp = temp->child;
     }
+
     assign_crowding_distance (pop, dist, obj_array, front_size);
+
     free (dist);
+    dist  = NULL;
+
     for (i=0; i<nobj; i++)
     {
         free (obj_array[i]);
+        obj_array[i] = NULL;
     }
+
     free (obj_array);
+    obj_array = NULL;
+
     return;
 }
 
 /* Routine to compute crowding distance based on objective function values when the population in in the form of an array */
 void assign_crowding_distance_indices (population *pop, int c1, int c2)
 {
-    int **obj_array;
-    int *dist;
+    int **obj_array = NULL;
+    int *dist = NULL;
     int i, j;
     int front_size;
+
     front_size = c2-c1+1;
+
     if (front_size==1)
     {
         pop->ind[c1].crowd_dist = INF;
@@ -66,23 +81,33 @@ void assign_crowding_distance_indices (population *pop, int c1, int c2)
         pop->ind[c2].crowd_dist = INF;
         return;
     }
+
     obj_array = (int **)malloc(nobj*sizeof(int));
     dist = (int *)malloc(front_size*sizeof(int));
+
     for (i=0; i<nobj; i++)
     {
         obj_array[i] = (int *)malloc(front_size*sizeof(int));
     }
+
     for (j=0; j<front_size; j++)
     {
         dist[j] = c1++;
     }
+
     assign_crowding_distance (pop, dist, obj_array, front_size);
     free (dist);
+    dist  = NULL;
+
     for (i=0; i<nobj; i++)
     {
         free (obj_array[i]);
+        obj_array[i] = NULL;
     }
+
     free (obj_array);
+    obj_array = NULL;
+
     return;
 }
 

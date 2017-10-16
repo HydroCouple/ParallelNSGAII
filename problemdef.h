@@ -11,7 +11,11 @@
 
 typedef void (*problemDef)(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs);
 
+typedef void (*problemDefInitialize)(int processorRank, std::vector<std::string>& optionalArgs);
+
 extern problemDef problemDefinition;
+
+extern problemDefInitialize problemDefinitionInitialize;
 
 extern std::vector<std::string> problemOptions;
 
@@ -50,7 +54,7 @@ void test_problem_vnt(int gen, int indIndex, int nreal, double *xreal, int nbin,
 void test_problem_zdt1(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs);
 //7
 void test_problem_zdt2(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs);
-//8
+//8z
 void test_problem_zdt3(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs);
 //9
 void test_problem_zdt4(int gen, int indIndex, int nreal, double *xreal, int nbin, double *xbin, int *nbits, int **gene, int nobj, double *obj, int ncon, double *constr, const std::vector<std::string>& optionalArgs);

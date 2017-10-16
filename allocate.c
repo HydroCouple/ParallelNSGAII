@@ -13,10 +13,11 @@ void allocate_memory_pop (population *pop, int size)
   int i;
   pop->ind = (individual *)malloc(size*sizeof(individual));
 
-  for (i= 0; i<size; i++)
+  for (i= 0; i < size; i++)
   {
     allocate_memory_ind (&(pop->ind[i]));
   }
+
   return;
 }
 
@@ -25,9 +26,13 @@ void allocate_memory_ind (individual *ind)
 {
   int j;
 
-  if (nreal != 0)
+  if (nreal > 0)
   {
     ind->xreal = (double *)malloc(nreal*sizeof(double));
+  }
+  else
+  {
+    ind->xreal = NULL;
   }
 
   if (nbin > 0)
@@ -40,11 +45,24 @@ void allocate_memory_ind (individual *ind)
       ind->gene[j] = (int *) malloc (nbits[j]*sizeof(int));
     }
   }
+  else
+  {
+    ind->xbin = NULL;
+    ind->gene = NULL;
+  }
+
+
   ind->obj = (double *)malloc(nobj*sizeof(double));
-  if (ncon != 0)
+
+  if (ncon > 0)
   {
     ind->constr = (double *)malloc(ncon*sizeof(double));
   }
+  else
+  {
+    ind->constr = NULL;
+  }
+
   return;
 }
 
@@ -52,11 +70,15 @@ void allocate_memory_ind (individual *ind)
 void deallocate_memory_pop (population *pop, int size)
 {
   int i;
+
   for (i=0; i<size; i++)
   {
     deallocate_memory_ind (&(pop->ind[i]));
   }
+
   free (pop->ind);
+  pop->ind = NULL;
+
   return;
 }
 
@@ -64,23 +86,37 @@ void deallocate_memory_pop (population *pop, int size)
 void deallocate_memory_ind (individual *ind)
 {
   int j;
-  if (nreal != 0)
+
+  if (nreal > 0)
   {
     free(ind->xreal);
+    ind->xreal = NULL;
   }
-  if (nbin != 0)
+
+  if (nbin > 0)
   {
+
     for (j=0; j<nbin; j++)
     {
       free(ind->gene[j]);
+      ind->gene[j] = NULL;
     }
+
     free(ind->xbin);
+    ind->xbin = NULL;
+
     free(ind->gene);
+    ind->gene =NULL;
   }
+
   free(ind->obj);
-  if (ncon != 0)
+  ind->obj = NULL;
+
+  if (ncon > 0)
   {
     free(ind->constr);
+    ind->constr = NULL;
   }
+
   return;
 }
