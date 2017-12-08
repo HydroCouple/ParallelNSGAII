@@ -22,9 +22,9 @@ void evaluate_pop (population *pop)
 
     if(inds_per_mpi_task.quot)
     {
-#ifdef USE_OPENMP
-#pragma omp parallel for
-#endif
+      //#ifdef USE_OPENMP
+      //#pragma omp parallel for
+      //#endif
       for(int p = 1; p < mpiProcessors; p++)
       {
         int start = p * inds_per_mpi_task.quot;
@@ -168,14 +168,14 @@ void mpi_serialize_ind_from_master(individual *ind, std::vector<double> &data)
 
 void mpi_recieve_inds_from_master(double *values, int size)
 {
-  currentGen = values[0];
-  int numIndividuals = values[1];
-  int currPos = 2;
+  int currPos = 0;
+  currentGen = values[currPos]; currPos++;
+  int numIndividuals = values[currPos]; currPos++;
 
 
   printf("[%i] => [%i] Recieving |  No Ind: %i | Data Size: %i\n", 0 , procRank, numIndividuals, size);
 
-  individual *inds = (individual*)malloc(numIndividuals*sizeof(individual));
+  individual *inds = (individual*)malloc(numIndividuals * sizeof(individual));
   int *indexes = new int[numIndividuals];
 
 
@@ -296,6 +296,7 @@ void mpi_recieve_inds_from_worker(population *pop, int mpiProcessor)
 
           printf("deleting data from worker...\n");
           delete[] data;
+          printf("finished deleting data from worker...\n");
         }
       }
       break;

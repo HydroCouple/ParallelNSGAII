@@ -960,17 +960,8 @@ int main(int argc, char **argv)
       if(countResult == MPI_SUCCESS && dataSize > 0)
       {
         double *data = new double[dataSize];
-
-        printf("Receiving MPI data...\n");
-
         result = MPI_Recv(data, dataSize, MPI_DOUBLE, status.MPI_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-
-        printf("Processing MPI data...\n");
-
         mpi_recieve_inds_from_master(data, dataSize);
-
-        printf("Finished Processing MPI data...\n");
-
         delete[] data;
       }
     }
