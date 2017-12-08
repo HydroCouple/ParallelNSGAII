@@ -329,7 +329,7 @@ int main(int argc, char **argv)
   {
     int allowed = 0;
     int rc = MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &allowed);
-//    int rc = MPI_Init(&argc,&argv);
+    //    int rc = MPI_Init(&argc,&argv);
 
     if (rc != MPI_SUCCESS)
     {
@@ -950,22 +950,29 @@ int main(int argc, char **argv)
     MPI_Status status;
 
     int result = 0;
-    int dataSize = 0;
 
-    while ((result = MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status)) == MPI_SUCCESS && status.MPI_TAG != DIE_TAG &&
-           (result = MPI_Get_count(&status, MPI_DOUBLE, &dataSize)) == MPI_SUCCESS && dataSize > 0)
+    while ((result = MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status)) == MPI_SUCCESS && status.MPI_TAG != DIE_TAG)
     {
 
-      double *data = new double[dataSize];
+      int dataSize = 0;
+      int countResult = MPI_Get_count(&status, MPI_DOUBLE, &dataSize);
 
-      result = MPI_Recv(data, dataSize, MPI_DOUBLE, status.MPI_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-
-      if (result == MPI_SUCCESS)
+      if(countResult == MPI_SUCCESS && dataSize > 0)
       {
-        mpi_recieve_inds_from_master(data, dataSize);
-      }
+        double *data = new double[dataSize];
 
-      delete[] data;
+        printf("Receiving MPI data...\n");
+
+        result = MPI_Recv(data, dataSize, MPI_DOUBLE, status.MPI_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+
+        printf("Processing MPI data...\n");
+
+        mpi_recieve_inds_from_master(data, dataSize);
+
+        printf("Finished Processing MPI data...\n");
+
+        delete[] data;
+      }
     }
 
     switch (result)

@@ -173,9 +173,9 @@ void mpi_recieve_inds_from_master(double *values, int size)
   int currPos = 2;
 
 
-  printf("[%i] => [%i] Recieving |  No Ind: %i | Data Size: %i\n", 0 , procRank,numIndividuals, size);
+  printf("[%i] => [%i] Recieving |  No Ind: %i | Data Size: %i\n", 0 , procRank, numIndividuals, size);
 
-  individual *inds = (individual*)malloc(size*sizeof(numIndividuals));
+  individual *inds = (individual*)malloc(numIndividuals*sizeof(individual));
   int *indexes = new int[numIndividuals];
 
 
@@ -207,17 +207,14 @@ void mpi_recieve_inds_from_master(double *values, int size)
 
   MPI_Send(&data[0],data.size(),MPI_DOUBLE,0,0,MPI_COMM_WORLD);
 
+
   for(int i = 0; i < numIndividuals; i++)
   {
     deallocate_memory_ind(&inds[i]);
   }
 
-
-  free(inds);
-  inds = NULL;
-
   delete[] indexes;
-
+  free(inds);
 }
 
 void mpi_desrialize_ind_from_master(individual *ind, double *values, int &currentPos)
@@ -297,6 +294,7 @@ void mpi_recieve_inds_from_worker(population *pop, int mpiProcessor)
             }
           }
 
+          printf("deleting data from worker...\n");
           delete[] data;
         }
       }
